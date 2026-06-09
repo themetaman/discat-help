@@ -8,10 +8,10 @@ DisCat MCP connects your DisCat vinyl collection manager to Claude Desktop, lett
 
 **What that looks like in practice:**
 
-> *"Which sellers have the most of my wantlist items?"*
-> *"Compare Seller 1 and Seller 2 for Techno, VG+ condition only."*
-> *"Show me all my wantlist wants that are scanned but nothing's for sale right now."*
-> *"Give me a breakdown of my collection by genre and style."*
+*"Which sellers have the most of my wantlist items?"*
+*"Compare Seller 1 and Seller 2 for Techno, VG+ condition only."*
+*"Show me all my wantlist wants that are scanned but nothing's for sale right now."*
+*"Give me a breakdown of my collection by genre and style."*
 
 Claude uses a set of DisCat tools behind the scenes — you don't need to know which tool does what, just ask your question in plain English.
 
@@ -32,7 +32,7 @@ Before using DisCat MCP, you need:
 3. **Claude Desktop installed** — with `DisCatMCP.exe` configured as an MCP server
 4. **Your wantlist scanned** — for seller coverage and buying-run features, run **Scan Market** in DisCat first to populate marketplace data
 
-> **Note:** The MCP tools work from DisCat's local database — they don't call the Discogs API in real time (except **Sync My Wantlist**). If your data feels stale, re-run the relevant DisCat operation first, then come back to Claude.
+**Note:** The MCP tools work from DisCat's local database — they don't call the Discogs API in real time (except **Sync My Wantlist**). If your data feels stale, re-run the relevant DisCat operation first, then come back to Claude.
 
 ---
 
@@ -58,7 +58,7 @@ Open Claude Desktop normally. As long as `DisCatMCP.exe` is configured in your C
 
 You can confirm it's working by checking the DisCat **Settings** tab — the MCP status indicator shows whether Claude Desktop has an active connection. Alternatively, just ask Claude:
 
-> *"Are you connected to DisCat?"*
+*"Are you connected to DisCat?"*
 
 Claude will either respond with your collection stats or let you know it can't reach the tools.
 
@@ -68,17 +68,17 @@ Claude will either respond with your collection stats or let you know it can't r
 
 Once everything is connected, start simple:
 
-> *"Give me an overview of my collection."*
+*"Give me an overview of my collection."*
 
 Claude will call `collection_stats` and come back with your total item count, folder breakdown, format split, purchase totals, and genre/style breakdown — a solid confirmation that everything is working.
 
 From there, try your wantlist:
 
-> *"Give me a summary of my wantlist."*
+*"Give me a summary of my wantlist."*
 
 This confirms your wantlist data is populated and shows you how many items have been scanned for marketplace listings.
 
-> **Tip:** You don't need to phrase questions in any particular way — Claude understands natural language. "How many records do I own?" works just as well as "Show me collection stats."
+**Tip:** You don't need to phrase questions in any particular way — Claude understands natural language. "How many records do I own?" works just as well as "Show me collection stats."
 
 ---
 
@@ -91,7 +91,7 @@ If Claude says it can't access your DisCat data:
 3. Make sure `DisCatMCP.exe` hasn't been blocked by antivirus software
 4. Check that your `config.env` file has valid Discogs credentials
 
-> **Note:** Claude Desktop automatically closes idle MCP connections after a couple of minutes — this is normal. It reconnects on your next query without any action needed.
+**Note:** Claude Desktop automatically closes idle MCP connections after a couple of minutes — this is normal. It reconnects on your next query without any action needed.
 
 ---
 
@@ -125,7 +125,7 @@ When you run **Scan Market** in DisCat, it scrapes Discogs marketplace listings 
 | **For Sale** | Scanned and copies are currently listed on Discogs |
 | **Not Listed** | Scanned but no copies are currently for sale |
 
-> **Note:** "Not Listed" is not the same as "impossible to find" — it just means nothing was available at the time of the last scan. Listings come and go. Items in this state are worth setting up Discogs alerts for.
+**Note:** "Not Listed" is not the same as "impossible to find" — it just means nothing was available at the time of the last scan. Listings come and go. Items in this state are worth setting up Discogs alerts for.
 
 For the buying-run tools (`seller_coverage`, `seller_compare`) to work well, you want as few **Pending** items as possible. Run **Scan Market** in DisCat to clear them.
 
@@ -139,13 +139,13 @@ The most common example: a record you'd call **Deep House** may simply be tagged
 
 The fix is to search broader:
 
-> *"Which sellers cover the most of my House wants?"*
+*"Which sellers cover the most of my House wants?"*
 
 Then use a comma-separated list to cast a wider net:
 
-> *"Compare Seller 1 and Seller 2 for House, Deep House, Chicago House, and Garage House combined."*
+*"Compare Seller 1 and Seller 2 for House, Deep House, Chicago House, and Garage House combined."*
 
-> **Tip:** Run `wantlist_styles` first — it lists every style tag actually present in your wantlist with counts. This tells you exactly which style names are worth filtering by before you run a coverage query.
+**Tip:** Run `wantlist_styles` first — it lists every style tag actually present in your wantlist with counts. This tells you exactly which style names are worth filtering by before you run a coverage query.
 
 ---
 
@@ -167,9 +167,9 @@ These tools let you explore and interrogate your Discogs collection from within 
 
 ### Getting an overview — `collection_stats`
 
-> *"Give me an overview of my collection."*
-> *"How much have I spent in total?"*
-> *"What's my genre breakdown?"*
+*"Give me an overview of my collection."*
+*"How much have I spent in total?"*
+*"What's my genre breakdown?"*
 
 `collection_stats` returns a summary of everything in your database:
 
@@ -178,16 +178,16 @@ These tools let you explore and interrogate your Discogs collection from within 
 - Purchase totals — total spend, number of purchases matched to collection items
 - Genre and style breakdowns, sorted by count
 
-> **Note:** Genre and style data is only populated for items downloaded with the **Genres & Styles** option ticked in DisCat. The `items_with_genre_data` field tells you how much of your collection has this data.
+**Note:** Genre and style data is only populated for items downloaded with the **Genres & Styles** option ticked in DisCat. The `items_with_genre_data` field tells you how much of your collection has this data.
 
 ---
 
 ### Searching your collection — `collection_search`
 
-> *"Show me all my Jazz records from 1960 to 1975."*
-> *"Which House records do I own on D.J. International?"*
-> *"What's my most expensive record?"*
-> *"Find everything in my Favourites folder."*
+*"Show me all my Jazz records from 1960 to 1975."*
+*"Which House records do I own on D.J. International?"*
+*"What's my most expensive record?"*
+*"Find everything in my Favourites folder."*
 
 `collection_search` is the main collection browsing tool. All filters are AND-combined — you can mix and match freely:
 
@@ -205,11 +205,11 @@ These tools let you explore and interrogate your Discogs collection from within 
 | `style` | Style/sub-genre tag | `"Deep House"` |
 | `sort_by` | Sort order | `price_desc`, `artist`, `year` |
 
-> **Note:** `country`, `genre`, and `style` filtering requires detailed metadata. If you haven't downloaded with those options, these filters will return no results.
+**Note:** `country`, `genre`, and `style` filtering requires detailed metadata. If you haven't downloaded with those options, these filters will return no results.
 
 **Finding your most expensive records:**
 
-> *"What are my most expensive GBP purchases?"*
+*"What are my most expensive GBP purchases?"*
 
 Because purchases are stored in mixed currencies, always tell Claude which currency you want when asking about prices — this lets it filter correctly before sorting.
 
@@ -217,8 +217,8 @@ Because purchases are stored in mixed currencies, always tell Claude which curre
 
 ### Drilling into a single record — `collection_item`
 
-> *"Give me full details on that Roy Ayers record."*
-> *"What condition did I buy it in? Who did I buy it from?"*
+*"Give me full details on that Roy Ayers record."*
+*"What condition did I buy it in? Who did I buy it from?"*
 
 Once you have a `release_id` from `collection_search`, you can pull the complete record: genres, styles, country, tracklist, credits, community have/want counts, and all purchase metadata (price, date, seller, conditions, order link).
 
@@ -226,26 +226,22 @@ If you own the same release twice, use the `instance_id` to target a specific co
 
 ---
 
-### Price + market source provenance ⚠️ *Documentation pending*
+### Price + market source provenance
 
-> *Added 2026-05-04. Full documentation to be written.*
->
-> **What it does:** `collection_search` and `collection_item` results now include a `price_paid` object with `is_estimated=true` when the value came from Auto-Estimate or bulk CSV import (raw string ends with `(e)`) rather than a real Discogs purchase order. `market_values` (both `stats` and `valuation` modes), `collection_item.market_stats`, and `collection_valuation` per-item rows include a `source` enum: `'sales'` (canonical Discogs sales history), `'listings'` (asking-price fallback when no sales history exists — less reliable), or `'manual'` (user override). `valuation_rules.data_provenance` breaks down item counts and dollar value share by source so the LLM can flag fragile estimates. Use these signals to ask things like *"what's my collection worth and how confident should I be?"* — Claude will weight sales-history rows more heavily and call out outlier manual or listings-derived values.
+`collection_search` and `collection_item` results now include a `price_paid` object with `is_estimated=true` when the value came from Auto-Estimate or bulk CSV import (raw string ends with `(e)`) rather than a real Discogs purchase order. `market_values` (both `stats` and `valuation` modes), `collection_item.market_stats`, and `collection_valuation` per-item rows include a `source` enum: `'sales'` (canonical Discogs sales history), `'listings'` (asking-price fallback when no sales history exists — less reliable), or `'manual'` (user override). `valuation_rules.data_provenance` breaks down item counts and dollar value share by source so the LLM can flag fragile estimates. Use these signals to ask things like *"what's my collection worth and how confident should I be?"* — Claude will weight sales-history rows more heavily and call out outlier manual or listings-derived values.
 
 ---
 
-### Ishkur Guide — `ishkur_genre` and `ishkur_for_release` ⚠️ *Documentation pending*
+### Ishkur Guide — `ishkur_genre` and `ishkur_for_release`
 
-> *Added 2026-05-04. Full documentation to be written.*
->
-> **What it does:** Bundled genre reference data from *Ishkur's Guide to Electronic Music* — 156 genres with long-form descriptions, scene/era, aliases, and exemplar tracks (title/url/year). `ishkur_genre(name)` looks up a genre directly (case-insensitive, with comma-aware alias fallback via the `also` field). `ishkur_for_release(release_id)` walks a collection release's Discogs styles and returns one Ishkur match per style, deduplicated. Use for questions like *"what is acid house"*, *"tell me about the genre lineage on this record"*, or *"give me three records in my collection that match Ishkur's definition of detroit techno"*. Data lives in `discat.db` and refreshes only on EXE rebuild — `ISHKUR_DATA_VERSION` controls the rollout independently of the schema.
+Bundled genre reference data from *Ishkur's Guide to Electronic Music* — 156 genres with long-form descriptions, scene/era, aliases, and exemplar tracks (title/url/year). `ishkur_genre(name)` looks up a genre directly (case-insensitive, with comma-aware alias fallback via the `also` field). `ishkur_for_release(release_id)` walks a collection release's Discogs styles and returns one Ishkur match per style, deduplicated. Use for questions like *"what is acid house"*, *"tell me about the genre lineage on this record"*, or *"give me three records in my collection that match Ishkur's definition of detroit techno"*. Data lives in `discat.db` and refreshes only on EXE rebuild — `ISHKUR_DATA_VERSION` controls the rollout independently of the schema.
 
 ---
 
 ### Finding duplicates — `find_duplicates`
 
-> *"Do I have any duplicate releases?"*
-> *"Which records do I own more than one copy of?"*
+*"Do I have any duplicate releases?"*
+*"Which records do I own more than one copy of?"*
 
 Scans your entire collection in a single query and returns any release_id that appears more than once — along with which folders the copies are in and their instance IDs. Useful before doing a clear-out or folder reorganisation.
 
@@ -253,8 +249,8 @@ Scans your entire collection in a single query and returns any release_id that a
 
 ### Browsing by folder — `folder_list`
 
-> *"What folders do I have?"*
-> *"How many records are in each folder?"*
+*"What folders do I have?"*
+*"How many records are in each folder?"*
 
 Returns all your Discogs folders with item counts, sorted largest first. Always run this before passing a folder name to `collection_search` — folder names are case-sensitive exact matches.
 
@@ -262,8 +258,8 @@ Returns all your Discogs folders with item counts, sorted largest first. Always 
 
 ### Custom fields — `list_custom_fields` and `custom_field_search`
 
-> *"Which records are marked for upgrade?"*
-> *"Show me everything with a custom field value."*
+*"Which records are marked for upgrade?"*
+*"Show me everything with a custom field value."*
 
 If you use Discogs custom fields (e.g. **Upgrade**, **Price Paid**, **Sleeve Condition**), DisCat stores them locally and makes them searchable.
 
@@ -276,16 +272,16 @@ Example: *"Show me all records tagged Upgrade=yes"* → Claude calls `custom_fie
 
 ### Purchase history — `purchase_history`
 
-> *"What did I buy from Seller 1?"*
-> *"Show me my most expensive EUR purchases."*
-> *"What did I buy last month?"*
+*"What did I buy from Seller 1?"*
+*"Show me my most expensive EUR purchases."*
+*"What did I buy last month?"*
 
 Returns your purchase orders with full metadata: date, artist, title, price, currency, seller, media condition, sleeve condition, and order status.
 
 **Important — currencies are mixed:** Discogs records purchases in the seller's local currency. If you ask for most expensive purchases without specifying a currency, you'll get raw numbers compared across GBP, EUR, USD, etc. — which is meaningless. Always filter by currency first:
 
-> *"Show me my most expensive GBP purchases."*
-> *"What did I spend in EUR last year?"*
+*"Show me my most expensive GBP purchases."*
+*"What did I spend in EUR last year?"*
 
 ---
 
@@ -295,8 +291,8 @@ These tools let you explore your wantlist and understand what you're looking for
 
 ### Wantlist summary — `wantlist_stats`
 
-> *"Give me a summary of my wantlist."*
-> *"How many of my wants have been scanned?"*
+*"Give me a summary of my wantlist."*
+*"How many of my wants have been scanned?"*
 
 Returns the full picture at a glance:
 
@@ -315,8 +311,8 @@ Returns the full picture at a glance:
 
 ### Style and genre tags — `wantlist_styles`
 
-> *"What styles make up my wantlist?"*
-> *"How much of my wantlist is tagged House vs Deep House?"*
+*"What styles make up my wantlist?"*
+*"How much of my wantlist is tagged House vs Deep House?"*
 
 Lists every Discogs style and genre tag across your wantlist with counts, sorted highest first. **Run this before any style-filtered query** — it tells you exactly which style names are worth filtering by and highlights tagging gaps (e.g. if `House` has 80 items but `Deep House` only has 7, most of your House wants aren't sub-tagged).
 
@@ -324,9 +320,9 @@ Lists every Discogs style and genre tag across your wantlist with counts, sorted
 
 ### Searching your wantlist — `wantlist_search`
 
-> *"Show me my unscanned Techno wants."*
-> *"Which of my House wants have copies for sale?"*
-> *"What 1990s Jungle records am I looking for?"*
+*"Show me my unscanned Techno wants."*
+*"Which of my House wants have copies for sale?"*
+*"What 1990s Jungle records am I looking for?"*
 
 Filters your wantlist by any combination of:
 
@@ -340,16 +336,16 @@ Each result includes the item's artist, title, year, styles, genres, your rating
 
 **Useful combinations:**
 
-> *"Show me all my Techno wants that are For Sale."* → filter `style="Techno"`, `scan_state="for_sale"`
+*"Show me all my Techno wants that are For Sale."* → filter `style="Techno"`, `scan_state="for_sale"`
 
-> *"Which of my House wants have never been scanned?"* → filter `style="House"`, `scan_state="pending"`
+*"Which of my House wants have never been scanned?"* → filter `style="House"`, `scan_state="pending"`
 
 ---
 
 ### Listing wantlist items — `wantlist_list`
 
-> *"List all my wantlist items."*
-> *"Which of my wants have cached listings?"*
+*"List all my wantlist items."*
+*"Which of my wants have cached listings?"*
 
 Returns every item on your wantlist. The `has_cached_listings` field tells you at a glance which items have been scanned and have marketplace data ready — without having to look up each one individually.
 
@@ -357,8 +353,8 @@ Returns every item on your wantlist. The `has_cached_listings` field tells you a
 
 ### Syncing your wantlist — `wantlist_sync`
 
-> *"Sync my wantlist."*
-> *"Pull the latest changes from Discogs."*
+*"Sync my wantlist."*
+*"Pull the latest changes from Discogs."*
 
 Equivalent to pressing **Sync My Wantlist** in DisCat. Calls the Discogs API to refresh your local wantlist — picks up items you've added or removed since the last sync.
 
@@ -372,9 +368,9 @@ This is where DisCat MCP really earns its keep. If you're heading to a record fa
 
 ### Finding the best sellers — `seller_coverage`
 
-> *"Which sellers have the most of my wants?"*
-> *"Who covers the most of my House wantlist?"*
-> *"Which sellers have the best coverage of my Techno wants, VG+ condition minimum?"*
+*"Which sellers have the most of my wants?"*
+*"Who covers the most of my House wantlist?"*
+*"Which sellers have the best coverage of my Techno wants, VG+ condition minimum?"*
 
 Ranks sellers by how many of your wantlist items they stock, and calculates a cheapest-possible total if you were to buy everything they have from them.
 
@@ -388,17 +384,17 @@ Ranks sellers by how many of your wantlist items they stock, and calculates a ch
 | `style` | Filter to wants tagged with this style. Comma-separated for OR: `"House,Deep House"` |
 | `genre` | Filter to wants tagged with this genre |
 
-> **Before you run this:** Make sure your wantlist has been scanned with **Scan Market** in DisCat. Items that haven't been scanned don't appear in seller coverage results at all.
+**Before you run this:** Make sure your wantlist has been scanned with **Scan Market** in DisCat. Items that haven't been scanned don't appear in seller coverage results at all.
 
-> **Tip:** Run `wantlist_styles` first to check which style names are actually in your wantlist before filtering.
+**Tip:** Run `wantlist_styles` first to check which style names are actually in your wantlist before filtering.
 
 ---
 
 ### Comparing two sellers — `seller_compare`
 
-> *"Compare Seller 1 and Seller 2."*
-> *"Between Seller 1 and Seller 2, who should I prioritise for House?"*
-> *"What does Seller 1 have that Seller 2 doesn't?"*
+*"Compare Seller 1 and Seller 2."*
+*"Between Seller 1 and Seller 2, who should I prioritise for House?"*
+*"What does Seller 1 have that Seller 2 doesn't?"*
 
 Takes two seller names (exactly as they appear in `seller_coverage` output) and breaks down the comparison across four categories:
 
@@ -420,22 +416,22 @@ Seller names must be exact matches — copy them from `seller_coverage` output.
 Here's a typical buying-run conversation from start to finish:
 
 **Step 1: Check the overall picture**
-> *"Give me a wantlist summary."*
+*"Give me a wantlist summary."*
 
 Check how many items are scanned. If `unscanned_releases` is high, go scan in DisCat first.
 
 **Step 2: Understand your wantlist by style**
-> *"What styles make up my wantlist?"*
+*"What styles make up my wantlist?"*
 
 `wantlist_styles` tells you the landscape — which genres and sub-genres to focus on.
 
 **Step 3: Find the top sellers for your target style**
-> *"Which sellers cover the most of my House wants, VG+ media minimum?"*
+*"Which sellers cover the most of my House wants, VG+ media minimum?"*
 
 `seller_coverage(style="House,Deep House,Chicago House", min_media="VG+")` returns a ranked list.
 
 **Step 4: Decide on your top two**
-> *"Compare Seller 1 and Seller 2 for House, VG+ minimum."*
+*"Compare Seller 1 and Seller 2 for House, VG+ minimum."*
 
 `seller_compare` shows you exactly what each has, what overlaps, and what's left uncovered.
 
@@ -443,7 +439,7 @@ Check how many items are scanned. If `unscanned_releases` is high, go scan in Di
 From the overlap section, buy whichever seller is cheaper on duplicate items. Buy unique items from the seller who has more of what you want overall. Add the uncovered items to a watchlist or check other sellers.
 
 **Step 6: Export if you want a reference to work from**
-> *"Export the seller coverage results to CSV."*
+*"Export the seller coverage results to CSV."*
 
 Saves a file you can open in Excel while you're shopping.
 
@@ -453,7 +449,7 @@ Saves a file you can open in Excel while you're shopping.
 
 ### Scanning for marketplace listings
 
-> *"Scan my wantlist for listings."*
+*"Scan my wantlist for listings."*
 
 **This operation must be run from DisCat directly** — it cannot be triggered through Claude. Open DisCat and use the **Scan Market** or **Refresh All** button on the Wantlist → Coverage tab. DisCat shows live progress and lets you stop mid-scan.
 
@@ -463,8 +459,8 @@ If you ask Claude to scan, it will give you step-by-step instructions to do it i
 
 ### Looking up listings for one release — `marketplace_listings`
 
-> *"What copies of release 12345 are listed right now?"*
-> *"Show me VG+ listings for that release."*
+*"What copies of release 12345 are listed right now?"*
+*"Show me VG+ listings for that release."*
 
 Returns cached marketplace listings for a single wantlist release. You'll need the `release_id` — Claude can get it from `wantlist_list` or `wantlist_search`.
 
@@ -478,9 +474,9 @@ If the release hasn't been scanned yet, you'll get a `no_cache` status — run *
 
 ### Saving results to a file — `report_export`
 
-> *"Export the seller coverage to CSV."*
-> *"Save the results as a Markdown file."*
-> *"Export to JSON and save it to my desktop."*
+*"Export the seller coverage to CSV."*
+*"Save the results as a Markdown file."*
+*"Export to JSON and save it to my desktop."*
 
 Exports the seller coverage report to a file you can open outside Claude. Three formats available:
 
@@ -492,17 +488,15 @@ Exports the seller coverage report to a file you can open outside Claude. Three 
 
 By default, the file is saved to your DisCat output directory with a standard filename (`wantlist_coverage_report.csv` etc.). You can specify a full path if you want it somewhere else:
 
-> *"Export to CSV and save it to C:\Users\theme\Desktop\shopping-list.csv."*
+*"Export to CSV and save it to C:\Users\theme\Desktop\shopping-list.csv."*
 
-> **Note:** `report_export` specifically exports seller coverage data. For ad-hoc collection or wantlist search results, just ask Claude to format its response as a table — or copy-paste directly from the Claude chat.
+**Note:** `report_export` specifically exports seller coverage data. For ad-hoc collection or wantlist search results, just ask Claude to format its response as a table — or copy-paste directly from the Claude chat.
 
 ---
 
-## Discogs Catalogue Tools ⚠️ *Documentation pending*
+## Discogs Catalogue Tools
 
-> *Added April 2026. Full documentation to be written.*
->
-> **What it does:** Four tools query the full Discogs catalogue (10M+ releases, 2M+ artists, labels, masters) from a local SQLite database — no API calls, instant results. Requires the `discogs-db/discogs_catalogue.db` file to be present alongside the EXE.
+Four tools query the full Discogs catalogue (10M+ releases, 2M+ artists, labels, masters) from a local SQLite database — no API calls, instant results. Requires the `discogs-db/discogs_catalogue.db` file to be present alongside the EXE.
 
 | Tool | What it does |
 |---|---|
@@ -511,16 +505,14 @@ By default, the file is saved to your DisCat output directory with a standard fi
 | `catalogue_search_catno` | Search the entire Discogs catalogue by partial catalogue number |
 | `catalogue_label` | Label lookup by ID or name; optional `include_releases=true` |
 
-> **Note:** These tools search the *full Discogs catalogue*, not just your collection. Use them to research releases you don't own yet, identify pressings, or look up label information.
+**Note:** These tools search the *full Discogs catalogue*, not just your collection. Use them to research releases you don't own yet, identify pressings, or look up label information.
 
-### Market & Valuation Tools ⚠️ *Documentation pending*
+### Market & Valuation Tools
 
-> *Added April 2026. Full documentation to be written.*
->
-> **What it does:** MCP tools for querying market values and estimating collection value.
->
-> - **`market_stats`** — look up scraped market data (median/avg/high/low/last sold) for a release in your collection
-> - **`collection_valuation`** — estimate total collection value using stored market data and condition multipliers
+MCP tools for querying market values and estimating collection value.
+
+- **`market_stats`** — look up scraped market data (median/avg/high/low/last sold) for a release in your collection
+- **`collection_valuation`** — estimate total collection value using stored market data and condition multipliers
 
 ---
 
@@ -563,11 +555,11 @@ Run **Sync My Wantlist** in DisCat (or ask Claude: *"Sync my wantlist"*) to pull
 
 If you update a record on the Discogs website (e.g. change a condition grade or add a note), you need to re-download your collection to pull the change into DisCat — and you must do it **without** the **Use cache** option.
 
-> **Why:** "Use cache" reads the JSON that was saved the last time you downloaded. It skips the Discogs API entirely, so any web edits since then won't be picked up.
+**Why:** "Use cache" reads the JSON that was saved the last time you downloaded. It skips the Discogs API entirely, so any web edits since then won't be picked up.
 
 To get the updated data: run **⬇️ Download Collection** in DisCat with **Use cache** unchecked. This fetches fresh data from Discogs and overwrites the cache.
 
-> **Tip:** If you want to make collection edits and keep everything in sync without re-downloading, use DisCat's own **Edit Record** dialog (right-click a record in the Collection tab) — changes are written to the local database and synced to Discogs immediately via the API.
+**Tip:** If you want to make collection edits and keep everything in sync without re-downloading, use DisCat's own **Edit Record** dialog (right-click a record in the Collection tab) — changes are written to the local database and synced to Discogs immediately via the API.
 
 ---
 
@@ -575,7 +567,7 @@ To get the updated data: run **⬇️ Download Collection** in DisCat with **Use
 
 Purchase prices are stored in the seller's local currency (GBP, EUR, USD, etc.) — DisCat doesn't convert them. Always tell Claude which currency you're interested in when asking about prices, e.g.:
 
-> *"What are my most expensive GBP purchases?"*
+*"What are my most expensive GBP purchases?"*
 
 For `seller_coverage` and `seller_compare`, the cheapest total price is calculated per-currency — items in different currencies aren't added together.
 

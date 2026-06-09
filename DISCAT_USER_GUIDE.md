@@ -1,5 +1,5 @@
 # DisCat v2.0 — User Guide
-**Version:** 2.0 | **Updated:** February 28, 2026
+**Version:** 2.0
 
 DisCat is a desktop app for managing your Discogs vinyl collection. It downloads your collection to a local database, tracks purchase history, enriches records with purchase metadata, and lets you find the best sellers across your entire wantlist.
 
@@ -16,7 +16,8 @@ DisCat is a desktop app for managing your Discogs vinyl collection. It downloads
 7. [Wantlist](#7-wantlist)
 8. [Stats](#8-stats)
 9. [MCP Server — DisCat in Claude Desktop](#9-mcp-server--discat-in-claude-desktop)
-10. [Tips & Troubleshooting](#10-tips--troubleshooting)
+10. [Web UI (Companion Browser App)](#10-web-ui-companion-browser-app)
+11. [Tips & Troubleshooting](#11-tips--troubleshooting)
 
 ---
 
@@ -32,13 +33,29 @@ DisCat is a desktop app for managing your Discogs vinyl collection. It downloads
 2. The setup wizard opens on first run
 3. Enter your **Consumer Key** and **Consumer Secret** from your Discogs app
 4. Enter your **Discogs Username**
-5. Choose an **Output Directory** — this is where `discat.db` and exports are saved (e.g. `C:\DisCat\data`)
+5. Choose an **Output Directory** — where DisCat keeps your data (see below). Pick a folder you back up, e.g. `C:\DisCat\data`
 6. Click **Authenticate** — a browser window opens
 7. Authorise DisCat on Discogs.com
 8. Copy the verifier code back into DisCat
 9. Click **Save** — credentials are stored in `config.env`
 
 Your settings are saved and restored automatically on every launch.
+
+### Where your data lives
+
+Everything DisCat creates lives in your **Output Directory** — there's no separate location to configure for each thing:
+
+- **`discat.db`** — your whole collection, wantlist, purchases, custom fields, market values and playlists. This single SQLite file *is* your database; back it up and you've backed up everything.
+- **`covers/`** — the cached front-cover images (created when you use 📷 Fetch Covers).
+- **CSV exports** — every export (collection, enriched collection, wantlist coverage, market values, manual purchase history) lands here **by default**, named automatically (e.g. `discogs_collection_2026-06-09_1430.csv`) so exporting never asks you where to save. You can send exports to a different folder with the **Export to:** field on the Export tab (see below). (Imports, by contrast, always let you pick the file to read.)
+
+If you never set an Output Directory, DisCat falls back to the folder it's run from — which is easy to lose track of, so it's worth setting one deliberately.
+
+### Changing the Output Directory later
+
+You're not locked into your first choice. On the **Download Collection** tab, use the **Save to:** field — type a path or click **Browse…** — and DisCat saves the new location immediately. From then on, the database, covers and exports all use the new folder.
+
+> **Moving existing data:** changing the Output Directory only points DisCat at the new folder — it doesn't move your current `discat.db`. To keep your existing collection, close DisCat, copy `discat.db` (and the `covers/` folder) into the new directory yourself, then reopen DisCat. Otherwise it'll start a fresh, empty database there.
 
 ---
 
@@ -69,17 +86,13 @@ Re-downloading never loses your purchase data. DisCat merges new Discogs data wh
 ### Stale entry cleanup
 On each download, DisCat removes any records that are no longer in your Discogs collection — so the local database stays in sync if you've sold or deleted items.
 
-### Partial download safeguard ⚠️ *Documentation pending*
+### Partial download safeguard
 
-> *This safeguard was added 2026-05-01. Full documentation to be written.*
->
-> **What it does:** If any folder fails to download fully (e.g. transient `429 Too Many Requests` from the Discogs API), DisCat retries that folder's page with backoff (5s → 15s → 60s). If retries are exhausted, the folder is skipped AND stale-item cleanup is also skipped for that run — so a network blip can never silently delete real records from your local DB. You'll see a yellow `⚠️ Partial download` line in the log; just re-run **Download Collection** once the API recovers.
+If any folder fails to download fully (e.g. transient `429 Too Many Requests` from the Discogs API), DisCat retries that folder's page with backoff (5s → 15s → 60s). If retries are exhausted, the folder is skipped AND stale-item cleanup is also skipped for that run — so a network blip can never silently delete real records from your local DB. You'll see a yellow `⚠️ Partial download` line in the log; just re-run **Download Collection** once the API recovers.
 
-### 🔄 Sync Custom Fields ⚠️ *Documentation pending*
+### 🔄 Sync Custom Fields
 
-> *This feature was added 2026-04-06. Full documentation to be written.*
->
-> **What it does:** Refreshes custom field values in the local DB without running a full collection download. Two modes: **fresh** (pulls latest values from the Discogs API — fast, collection pages only, no per-release calls) or **cache** (re-processes raw JSON already stored locally — instant, no API calls). Use **fresh** after editing custom fields on the Discogs website.
+Refreshes custom field values in the local DB without running a full collection download. Two modes: **fresh** (pulls latest values from the Discogs API — fast, collection pages only, no per-release calls) or **cache** (re-processes raw JSON already stored locally — instant, no API calls). Use **fresh** after editing custom fields on the Discogs website.
 
 ---
 
@@ -107,146 +120,118 @@ Click any column header to sort ▲/▼.
 - **Double-click** a row → opens Edit Record popup
 - **Right-click** → context menu with **Open on Discogs**, **Edit Record**, **Copy as JSON**, and **Delete Record**
 
-### Edit Record ⚠️ *Documentation pending*
+### Edit Record
 
-> *Added March 2026. Full documentation to be written.*
->
-> **What it does:** Right-click → Edit Record opens a popup to edit artist, title, rating, folder, notes, and all custom fields. Changes are saved locally and synced to Discogs immediately via the API. Dropdown custom fields (e.g. Media Condition, Bought New) render as dropdowns; text fields render as text boxes.
->
-> **Note on clearing dropdown values:** the Discogs API doesn't support blanking dropdown custom fields (any value sent must match a configured option). If you blank a dropdown in Edit Record, DisCat clears it locally and shows a notice that the Discogs side is unchanged. Workaround: define a "No" (or similar non-empty "off") option for the dropdown on Discogs — picking that value will sync cleanly. Affected fields: any single-option dropdown like `Upgrade`, `Bought New`, `Box Set`.
+Right-click → Edit Record opens a popup to edit artist, title, rating, folder, notes, and all custom fields. Changes are saved locally and synced to Discogs immediately via the API. Dropdown custom fields (e.g. Media Condition, Bought New) render as dropdowns; text fields render as text boxes.
 
-### Change Release (Edit Record) ⚠️ *Documentation pending*
+**Note on clearing dropdown values:** the Discogs API doesn't support blanking dropdown custom fields (any value sent must match a configured option). If you blank a dropdown in Edit Record, DisCat clears it locally and shows a notice that the Discogs side is unchanged. Workaround: define a "No" (or similar non-empty "off") option for the dropdown on Discogs — picking that value will sync cleanly. Affected fields: any single-option dropdown like `Upgrade`, `Bought New`, `Box Set`.
 
-> *Added 2026-06-04. Full documentation to be written.*
->
-> **What it does:** The Record Info block in Edit Record has a **🔀 Change Release…**
-> button to re-point a collection record at a different Discogs release (wrong
-> pressing added, or the Discogs entry was merged/split). Because Discogs has no API
-> to change an instance's release, DisCat **adds a new instance for the chosen
-> release and removes the old one**, carrying over your saved folder, rating, notes,
-> custom fields and purchase data. It validates the new release ID first (nothing is
-> changed if it's invalid), then confirms — note the record gets a **new instance ID**
-> and its **Date Added resets to today** (Discogs stamps that on add and it can't be
-> preserved). The add always happens before the delete, so a failure can't lose the
-> record.
+### Change Release (Edit Record)
 
-### Tracklist in Edit Record ⚠️ *Documentation pending*
+The Record Info block in Edit Record has a **🔀 Change Release…**
+button to re-point a collection record at a different Discogs release (wrong
+pressing added, or the Discogs entry was merged/split). Because Discogs has no API
+to change an instance's release, DisCat **adds a new instance for the chosen
+release and removes the old one**, carrying over your saved folder, rating, notes,
+custom fields and purchase data. It validates the new release ID first (nothing is
+changed if it's invalid), then confirms — note the record gets a **new instance ID**
+and its **Date Added resets to today** (Discogs stamps that on add and it can't be
+preserved). The add always happens before the delete, so a failure can't lose the
+record.
 
-> *Added 2026-05-04. Line format updated 2026-05-05. Full documentation to be written.*
->
-> **What it does:** Edit Record now shows the record's tracklist in a read-only monospace block between Record Info and Purchase Details. Format: `position: [artist — ]title - duration` (e.g. `A1: Let's Go (Fast Eddie's Mix) - 5:08`). Compilations show the per-track artist with an em-dash separator; single-artist releases skip it. Duration appears only when Discogs has it (often blank for vinyl). Capped at 8 visible lines with internal scroll for long tracklists. Selectable so you can copy a track title; otherwise read-only. Skipped entirely when the record was downloaded without "Genres & Styles" enabled (no tracklist data to show).
+### Tracklist in Edit Record
 
-### Purchase Order — manual edit toggle ⚠️ *Documentation pending*
+Edit Record now shows the record's tracklist in a read-only monospace block between Record Info and Purchase Details. Format: `position: [artist — ]title - duration` (e.g. `A1: Let's Go (Fast Eddie's Mix) - 5:08`). Compilations show the per-track artist with an em-dash separator; single-artist releases skip it. Duration appears only when Discogs has it (often blank for vinyl). Capped at 8 visible lines with internal scroll for long tracklists. Selectable so you can copy a track title; otherwise read-only. Skipped entirely when the record was downloaded without "Genres & Styles" enabled (no tracklist data to show).
 
-> *Added 2026-05-05. Full documentation to be written.*
->
-> **What it does:** The `Purchase Order` custom field in Edit Record's My Collection section is read-only by default (so a Discogs marketplace order link can't be accidentally overwritten) but unlockable via a checkbox: **✏️ Edit manually (for non-Discogs purchases)**. Tick it and the read-only label is replaced with an editable text box pre-populated with the current value, letting you log a Bandcamp / indie shop / record store invoice reference. Save round-trips through the normal custom-field sync path: stored locally and pushed to Discogs. Untick (or never tick) and the field stays at its current value — no spurious sync events. Intended for collections that mix Discogs marketplace orders with purchases from other sources.
+### Purchase Order — manual edit toggle
 
-### Upgrade → Wantlist auto-mirror ⚠️ *Documentation pending*
+The `Purchase Order` custom field in Edit Record's My Collection section is read-only by default (so a Discogs marketplace order link can't be accidentally overwritten) but unlockable via a checkbox: **✏️ Edit manually (for non-Discogs purchases)**. Tick it and the read-only label is replaced with an editable text box pre-populated with the current value, letting you log a Bandcamp / indie shop / record store invoice reference. Save round-trips through the normal custom-field sync path: stored locally and pushed to Discogs. Untick (or never tick) and the field stays at its current value — no spurious sync events. Intended for collections that mix Discogs marketplace orders with purchases from other sources.
 
-> *Added 2026-04-29. Full documentation to be written.*
->
-> **What it does:** Marking the `Upgrade` custom field as `yes` (in Edit Record or via Field Sync → Execute) automatically PUTs the release onto your Discogs wantlist. Clearing the flag (to `No`, blank, or any other value) prompts to remove the release from your wantlist. Adds are silent; removes always confirm. Decline-on-remove leaves the wantlist alone but still syncs the Upgrade clear.
->
-> **Note:** Wantlist add/remove only fires when the Upgrade field POST itself succeeds on Discogs — so if you blank an Upgrade dropdown (which Discogs rejects, see above), the wantlist is left alone too. To actually remove a want via this flow, set the dropdown to a real `No` option rather than blanking it. The `Sync Custom Fields → fresh` path does NOT trigger wantlist changes (use the Discogs website directly if you flipped Upgrade there).
+### Upgrade → Wantlist auto-mirror
 
-### Copy as JSON ⚠️ *Documentation pending*
+Marking the `Upgrade` custom field as `yes` (in Edit Record or via Field Sync → Execute) automatically PUTs the release onto your Discogs wantlist. Clearing the flag (to `No`, blank, or any other value) prompts to remove the release from your wantlist. Adds are silent; removes always confirm. Decline-on-remove leaves the wantlist alone but still syncs the Upgrade clear.
 
-> *Added 2026-05-09. Full documentation to be written.*
->
-> **What it does:** Right-click → 📋 Copy as JSON copies the full record details to your clipboard as pretty-printed JSON, ready to paste into Gemini, ChatGPT, Claude, or any other LLM for ad-hoc Q&A about the record. The payload includes every collection column (artist, title, year, label, catno, folder, rating, notes, dates), unpacked metadata (genres, styles, country, tracklist, credits, lowest price, num for sale, community have/want counts), all custom fields (Upgrade, Bought New, Price Paid, etc.), purchase details (price, currency, date, seller, order, media/sleeve condition), and market stats if cached. A confirmation popup shows the byte count so you can see how big the paste will be before sending.
+**Note:** Wantlist add/remove only fires when the Upgrade field POST itself succeeds on Discogs — so if you blank an Upgrade dropdown (which Discogs rejects, see above), the wantlist is left alone too. To actually remove a want via this flow, set the dropdown to a real `No` option rather than blanking it. The `Sync Custom Fields → fresh` path does NOT trigger wantlist changes (use the Discogs website directly if you flipped Upgrade there).
 
-### Delete Record ⚠️ *Documentation pending*
+### Copy as JSON
 
-> *Added 2026-04-06. Full documentation to be written.*
->
-> **What it does:** Right-click → 🗑️ Delete Record removes the item from both DisCat and your Discogs collection after confirmation. Keyed on `instance_id` so if you own two copies of the same release, only the right-clicked one is deleted.
+Right-click → 📋 Copy as JSON copies the full record details to your clipboard as pretty-printed JSON, ready to paste into Gemini, ChatGPT, Claude, or any other LLM for ad-hoc Q&A about the record. The payload includes every collection column (artist, title, year, label, catno, folder, rating, notes, dates), unpacked metadata (genres, styles, country, tracklist, credits, lowest price, num for sale, community have/want counts), all custom fields (Upgrade, Bought New, Price Paid, etc.), purchase details (price, currency, date, seller, order, media/sleeve condition), and market stats if cached. A confirmation popup shows the byte count so you can see how big the paste will be before sending.
 
-### 🔍 Check Missing ⚠️ *Documentation pending*
+### Delete Record
 
-> *Added 2026-04-06. Cancelled-order filter added 2026-04-21. Full documentation to be written.*
->
-> **What it does:** Compares your purchase history against your local collection and lists any purchases not found in the collection. Shows artist, title, purchase date, price, media/sleeve condition and order number (double-click to open the order on Discogs). Right-click any row to mark it as **Not Received** (hides it from the list persistently). Select items and click **➕ Add to Discogs Collection** to add them to Discogs and import them into DisCat automatically, including backfilling purchase data and custom fields.
->
-> **Cancelled orders are excluded** — purchases with a status starting with 'Cancelled' never surface here (no physical item arrived, so offering them as 'missing' would create phantom collection entries).
+Right-click → 🗑️ Delete Record removes the item from both DisCat and your Discogs collection after confirmation. Keyed on `instance_id` so if you own two copies of the same release, only the right-clicked one is deleted.
 
-### Market Values ⚠️ *Documentation pending*
+### 🔍 Check Missing
 
-> *Added April 2026, updated 2026-04-25. Full documentation to be written.*
->
-> **What it does:** Scrapes Discogs sales history for collection releases and stores median, average, high, low prices and last sold date. Requires a logged-in Chrome session (same as wantlist scanning). Results appear in the market value columns in the collection list (rendered in your base currency from Settings). Use **⏹ Stop** to cancel.
->
-> - **📈 Fetch Market Values — All** — scrapes every release in the collection. **Skips releases marked `(M)` (manual entries)** so hand-entered values are sticky. Status bar shows the skip count.
-> - **📈 Fetch Market Values — Selected** — scrapes only the rows you've selected in the collection list (Ctrl-click or Shift-click for multi-select). Will overwrite manual entries — explicit selection counts as deliberate.
-> - **Listings fallback** — if a release has no Discogs sales history (typically new pressings), DisCat scrapes the current marketplace listings page instead and computes median/avg/high/low across asking prices. These values display with an `(L)` suffix to flag that they're derived from listings, not completed sales (so expect a slight high-bias).
-> - **Manual override (Edit Record)** — open Edit Record and scroll to the "Market Values (manual override)" section. Enter Median / Average / High / Low / Currency / Last Sold by hand. Saved values appear with an `(M)` suffix in the collection list's Mkt columns.
-> - **📤 Export Market Values CSV / 📥 Import Market Values CSV** (Export tab) — round-trip bulk editing. Export writes one row per release including blanks for unfetched ones; tick "Only releases without market values" to limit to the gaps. Edit median/avg/high/low/currency in Excel, then Import — matched on `release_id`; rows where every value is blank are skipped (so a no-op round-trip won't blank existing data); imported rows are always tagged `(M)`. Currency accepts either symbol (`A$`, `£`) or ISO code (`AUD`, `GBP`) — both end up stored as ISO.
+Compares your purchase history against your local collection and lists any purchases not found in the collection. Shows artist, title, purchase date, price, media/sleeve condition and order number (double-click to open the order on Discogs). Right-click any row to mark it as **Not Received** (hides it from the list persistently). Select items and click **➕ Add to Discogs Collection** to add them to Discogs and import them into DisCat automatically, including backfilling purchase data and custom fields.
 
-### Multiple copies of the same release ⚠️ *Documentation pending*
+**Cancelled orders are excluded** — purchases with a status starting with 'Cancelled' never surface here (no physical item arrived, so offering them as 'missing' would create phantom collection entries).
 
-> *Behaviour refined 2026-04-20. Full documentation to be written.*
->
-> **What it does:** DisCat now treats each copy of a release as an independent instance. If you've bought the same record twice from two different sellers, each purchase is paired to its own collection instance (oldest purchase → earliest instance). Check Missing correctly surfaces any unmatched purchases — including a second copy bought from a different seller. Edit Record always edits the specific instance you right-clicked, never its siblings. Export CSVs emit one row per instance.
+### Market Values
 
-### Suffix legend ⚠️ *Documentation pending*
+Scrapes Discogs sales history for collection releases and stores median, average, high, low prices and last sold date. Requires a logged-in Chrome session (same as wantlist scanning). Results appear in the market value columns in the collection list (rendered in your base currency from Settings). Use **⏹ Stop** to cancel.
 
-> *Added 2026-04-25. Full documentation to be written.*
->
-> **What it does:** A small gray reference line above the collection table reminds you what the three short suffixes mean when they appear in price columns:
-> - **(e)** — the Price Paid value is an estimate (entered via the bulk CSV with the `estimated` column set to TRUE), not a known price from a receipt or order.
-> - **(M)** — Market values were entered manually (via Edit Record's manual override or the Market Values CSV import), not scraped from Discogs.
-> - **(L)** — Market values were derived from current marketplace listings rather than completed sales — typically for new pressings with no sales history yet. Expect a slight high-bias compared with sold-price medians.
+- **📈 Fetch Market Values — All** — scrapes every release in the collection. **Skips releases marked `(M)` (manual entries)** so hand-entered values are sticky. Status bar shows the skip count.
+- **📈 Fetch Market Values — Selected** — scrapes only the rows you've selected in the collection list (Ctrl-click or Shift-click for multi-select). Will overwrite manual entries — explicit selection counts as deliberate.
+- **Listings fallback** — if a release has no Discogs sales history (typically new pressings), DisCat scrapes the current marketplace listings page instead and computes median/avg/high/low across asking prices. These values display with an `(L)` suffix to flag that they're derived from listings, not completed sales (so expect a slight high-bias).
+- **Manual override (Edit Record)** — open Edit Record and scroll to the "Market Values (manual override)" section. Enter Median / Average / High / Low / Currency / Last Sold by hand. Saved values appear with an `(M)` suffix in the collection list's Mkt columns.
+- **📤 Export Market Values CSV / 📥 Import Market Values CSV** (Export tab) — round-trip bulk editing. Export writes one row per release including blanks for unfetched ones; tick "Only releases without market values" to limit to the gaps. Edit median/avg/high/low/currency in Excel, then Import — matched on `release_id`; rows where every value is blank are skipped (so a no-op round-trip won't blank existing data); imported rows are always tagged `(M)`. Currency accepts either symbol (`A$`, `£`) or ISO code (`AUD`, `GBP`) — both end up stored as ISO.
 
-### Catalog Cover Photos ⚠️ *Documentation pending*
+### Multiple copies of the same release
 
-> *This feature was added 2026-05-19. Full documentation to be written.*
->
-> **What it does:** The Collection tab's **📷 Fetch Covers — All** button
-> downloads each record's front-cover image into a local cache
-> (`<output_dir>/covers/`), skipping any already cached. The companion Web
-> UI then displays the thumbnails (with a vinyl-disc fallback for any not
-> yet fetched). Requires a one-time DB migration to schema v9 (happens
-> automatically the first time DisCat opens after the update).
+DisCat now treats each copy of a release as an independent instance. If you've bought the same record twice from two different sellers, each purchase is paired to its own collection instance (oldest purchase → earliest instance). Check Missing correctly surfaces any unmatched purchases — including a second copy bought from a different seller. Edit Record always edits the specific instance you right-clicked, never its siblings. Export CSVs emit one row per instance.
 
-### Grid data sources — curated custom fields ⚠️ *Documentation pending*
+### Suffix legend
 
-> *Changed 2026-05-21. Full documentation to be written.*
->
-> **What it does:** The List Collection grid now treats your Discogs
-> custom fields as the source of truth for **Year, Label, Style,
-> Country, Catalog #, Format** (Catalog # and Format are new
-> columns, default-visible). Only **Artist, Title, Folder, Date
-> Added** come from Discogs basic_information; **Price Paid** stays
-> as the linked purchase-order price with the `Price Paid` custom
-> field as a fallback; **Upgrade** stays as a custom field. A blank
-> cell now means "this custom field is unpopulated for this
-> record" — i.e. a real backfill target. Pair this with the new
-> Custom Field Audit panel (in the Organise Fields tab) to see
-> per-field coverage at a glance.
+A small gray reference line above the collection table reminds you what the three short suffixes mean when they appear in price columns:
+- **(e)** — the Price Paid value is an estimate (entered via the bulk CSV with the `estimated` column set to TRUE), not a known price from a receipt or order.
+- **(M)** — Market values were entered manually (via Edit Record's manual override or the Market Values CSV import), not scraped from Discogs.
+- **(L)** — Market values were derived from current marketplace listings rather than completed sales — typically for new pressings with no sales history yet. Expect a slight high-bias compared with sold-price medians.
 
-### Discogs Styles column ⚠️ *Documentation pending*
+### Catalog Cover Photos
 
-> *Added 2026-05-23. Full documentation to be written.*
->
-> **What it does:** A new default-visible **Discogs Styles** column
-> sits between Title and Folder on the List Collection grid, showing
-> the full multi-style list Discogs has on each release (sourced
-> from `raw_json.detailed_metadata.styles`). Distinct from the
-> curated single-value **Styles** column (sourced from the `Style`
-> custom field) — keep both visible when sorting records into
-> style-based folders so you can see every style tag Discogs has
-> alongside your own canonical pick. Blank if the record was
-> downloaded without the "Genres & Styles" option.
+The Collection tab's **📷 Fetch Covers — All** button
+downloads each record's front-cover image into a local cache
+(`<output_dir>/covers/`), skipping any already cached. The companion Web
+UI then displays the thumbnails (with a vinyl-disc fallback for any not
+yet fetched). Requires a one-time DB migration to schema v9 (happens
+automatically the first time DisCat opens after the update).
+
+### Grid data sources — curated custom fields
+
+The List Collection grid now treats your Discogs
+custom fields as the source of truth for **Year, Label, Style,
+Country, Catalog #, Format** (Catalog # and Format are new
+columns, default-visible). Only **Artist, Title, Folder, Date
+Added** come from Discogs basic_information; **Price Paid** stays
+as the linked purchase-order price with the `Price Paid` custom
+field as a fallback; **Upgrade** stays as a custom field. A blank
+cell now means "this custom field is unpopulated for this
+record" — i.e. a real backfill target. Pair this with the new
+Custom Field Audit panel (in the Organise Fields tab) to see
+per-field coverage at a glance.
+
+### Discogs Styles column
+
+A new default-visible **Discogs Styles** column
+sits between Title and Folder on the List Collection grid, showing
+the full multi-style list Discogs has on each release (sourced
+from `raw_json.detailed_metadata.styles`). Distinct from the
+curated single-value **Styles** column (sourced from the `Style`
+custom field) — keep both visible when sorting records into
+style-based folders so you can see every style tag Discogs has
+alongside your own canonical pick. Blank if the record was
+downloaded without the "Genres & Styles" option.
 
 ---
 
 ## 4. Purchase History
 
-> ### Tab restructured 2026-04-18 ⚠️ *Documentation pending*
->
-> **Purchase History** is now a sub-tab under a new parent tab called **Sales & Purchases**. A second sub-tab **Sales History** has been added for seller-role orders. The **🔌 Fetch via API** button has moved to Sales History and been renamed accordingly (the Discogs `/marketplace/orders` endpoint is seller-scoped, which is why it returned 0 results for buyer-only accounts on the old Purchase History tab).
->
-> **Sales History** is still being fleshed out — list view and aggregate stats TBD.
+### Sales & Purchases tab
+
+**Purchase History** is a sub-tab under the **Sales & Purchases** parent tab. A companion **Sales History** sub-tab covers seller-role orders and is where the **🔌 Fetch via API** button lives (the Discogs `/marketplace/orders` endpoint is seller-scoped, so it returns nothing for buyer-only accounts — that's why it sits with Sales rather than Purchases).
+
+**Note:** Sales History is still in progress — its list view and aggregate stats aren't finished yet.
 
 **Tab: Sales & Purchases → Purchase History**
 
@@ -337,40 +322,34 @@ Writes your purchase metadata back to Discogs as custom fields — so it appears
 
 Repeat for each field you want to sync.
 
-### Organise Folders ⚠️ *Documentation pending*
+### Organise Folders
 
-> *Folder organiser was significantly updated March 2026. Full documentation to be written.*
->
-> **What it does:** Moves records between Discogs folders based on style/genre matching rules. **Source folder** and **Target folder** dropdowns auto-populate from the local DB on startup (click ↻ to refresh). Match modes: Style (contains any), Style (contains all), Genre (contains all). A "within first N styles" limiter restricts matching to the most prominent styles on a release.
+Moves records between Discogs folders based on style/genre matching rules. **Source folder** and **Target folder** dropdowns auto-populate from the local DB on startup (click ↻ to refresh). Match modes: Style (contains any), Style (contains all), Genre (contains all). A "within first N styles" limiter restricts matching to the most prominent styles on a release.
 
-### Custom Field Audit popout + Setup dialog ⚠️ *Documentation pending*
+### Custom Field Audit popout + Setup dialog
 
-> *Added 2026-05-21. Moved to a popout window on 2026-05-24 so it
-> stops eating Preview/Log space on the Organise Fields tab. Full
-> documentation to be written.*
->
-> **What it does:** The **📋 Custom Field Audit…** button on the
-> Organise Fields tab opens a modeless popout window. A status line
-> shows setup completeness (e.g. `⚠ Setup: 1 required field(s)
-> missing on Discogs — Country`). A treeview lists every canonical
-> DisCat custom field with **Populated / Missing / Coverage %**.
-> Fields not yet defined on Discogs show `✗ not on Discogs`.
-> **Double-click a row** to load that field into the Sync
-> Configuration combo on the underlying tab — then pick a metadata
-> source and run Preview / Execute to bulk-backfill.
->
-> **🔧 Check Setup** opens a modal dialog listing every missing
-> canonical field with its required `Type / Lines / Options /
-> Purpose`, plus a **🔗 Open Discogs Settings** button that deep-links
-> to your Collection Settings page (the Discogs API has no public
-> endpoint for creating custom fields, so they must be added by
-> hand). **↻ Re-check** re-runs the comparison without closing.
->
-> **Auto-show after Sync Custom Fields** (checkbox in the dialog):
-> on by default; persisted as `AUDIT_SETUP_AUTO_SHOW` in
-> `config.env`. While enabled, the dialog opens automatically after
-> any Sync Custom Fields run when canonical fields are still missing
-> from Discogs.
+The **📋 Custom Field Audit…** button on the
+Organise Fields tab opens a modeless popout window. A status line
+shows setup completeness (e.g. `⚠ Setup: 1 required field(s)
+missing on Discogs — Country`). A treeview lists every canonical
+DisCat custom field with **Populated / Missing / Coverage %**.
+Fields not yet defined on Discogs show `✗ not on Discogs`.
+**Double-click a row** to load that field into the Sync
+Configuration combo on the underlying tab — then pick a metadata
+source and run Preview / Execute to bulk-backfill.
+
+**🔧 Check Setup** opens a modal dialog listing every missing
+canonical field with its required `Type / Lines / Options /
+Purpose`, plus a **🔗 Open Discogs Settings** button that deep-links
+to your Collection Settings page (the Discogs API has no public
+endpoint for creating custom fields, so they must be added by
+hand). **↻ Re-check** re-runs the comparison without closing.
+
+**Auto-show after Sync Custom Fields** (checkbox in the dialog):
+on by default; persisted as `AUDIT_SETUP_AUTO_SHOW` in
+`config.env`. While enabled, the dialog opens automatically after
+any Sync Custom Fields run when canonical fields are still missing
+from Discogs.
 
 ### Order Links
 The `Purchase Order` sync option generates a clickable URL from your order ID:
@@ -379,11 +358,9 @@ Order 62035-956 → https://www.discogs.com/sell/order/62035-956
 ```
 One click from your Discogs collection page takes you straight to the original listing, photos, and messages.
 
-### Use Local Value sync source ⚠️ *Documentation pending*
+### Use Local Value sync source
 
-> *Added 2026-04-25. Full documentation to be written.*
->
-> **What it does:** A sync source that pushes the value currently stored in your **local custom_fields** table up to Discogs unchanged. Use it after a bulk CSV import (e.g. Price Paid) when you want the imported values to land on Discogs without retyping them via Edit Record. Pick the target field name (e.g. `Price Paid`), select **Use Local Value** as the source, Preview → Execute. Works for any custom field — same flow for `Purchase Order` or anything else.
+A sync source that pushes the value currently stored in your **local custom_fields** table up to Discogs unchanged. Use it after a bulk CSV import (e.g. Price Paid) when you want the imported values to land on Discogs without retyping them via Edit Record. Pick the target field name (e.g. `Price Paid`), select **Use Local Value** as the source, Preview → Execute. Works for any custom field — same flow for `Purchase Order` or anything else.
 
 ---
 
@@ -431,11 +408,9 @@ Browse every marketplace listing for a single wantlist item.
 
 **⚠️ Availability column:** ✓ = ships to your region, ⚠ = region-restricted. Listings scraped before this feature was added may show ⚠ incorrectly — use Force Rescrape to refresh.
 
-### Fair Value summary ⚠️ *Documentation pending*
+### Fair Value summary
 
-> *This feature was added 2026-05-14. Full documentation to be written.*
->
-> **What it does:** Shows a live AVG + MEDIAN of the currently-visible listings, converted to your base currency, sitting next to the listing count. Updates as Min Media / Min Sleeve / Ships From / Hide unavailable change — so the number always reflects "what this release costs at the conditions I'd actually accept". Listings priced in a currency missing from your stored exchange rates are excluded with a count.
+Shows a live AVG + MEDIAN of the currently-visible listings, converted to your base currency, sitting next to the listing count. Updates as Min Media / Min Sleeve / Ships From / Hide unavailable change — so the number always reflects "what this release costs at the conditions I'd actually accept". Listings priced in a currency missing from your stored exchange rates are excluded with a count.
 
 ### Shared Chrome session
 If you already logged in on the Coverage tab, the same Chrome session is reused in Releases — no second login needed.
@@ -457,45 +432,41 @@ Total spend, number of purchases matched to collection items.
 ### Wantlist summary
 Total wantlist items, how many have been scanned, scan state breakdown (Pending / For Sale / Not Listed).
 
-### Collection Value ⚠️ *Documentation pending*
+### Collection Value
 
-> *Added April 2026, updated 2026-04-25. Full documentation to be written.*
->
-> **What it does:** Shows estimated total collection value based on Discogs median sale prices, adjusted for each record's condition grade. Displays total value, average per record, market data coverage %, and a Top Records by Value list. Use the spinbox next to the list to choose how many records to show (10–50 in increments of 10; default 10). Requires market values to be fetched first (📈 Fetch Market Values — All or — Selected on the Collection tab). Condition grades apply multipliers (Mint = 1.5×, NM = 1.25×, VG+ = 1.0×, VG = 0.6×, etc.).
->
-> **Format filter** — three checkboxes under the Top Records list (`12"/LP`, `Album`, `Box Set`) restrict the list using **mutually-exclusive tiers** with precedence `Box Set > Album > 12"/LP`. Each release is classified into exactly one tier (or none) by the highest-priority tag it carries: a 12" LP tagged Album appears only under Album; a deluxe edition tagged Album+Box Set appears only under Box Set. Ticked checkboxes union the matching tiers; no boxes = no filter. Filter applies to the Top N list only — the Total Value, Avg per Record, and Market Data coverage stats stay calculated across the whole collection.
+Shows estimated total collection value based on Discogs median sale prices, adjusted for each record's condition grade. Displays total value, average per record, market data coverage %, and a Top Records by Value list. Use the spinbox next to the list to choose how many records to show (10–50 in increments of 10; default 10). Requires market values to be fetched first (📈 Fetch Market Values — All or — Selected on the Collection tab). Condition grades apply multipliers (Mint = 1.5×, NM = 1.25×, VG+ = 1.0×, VG = 0.6×, etc.).
 
-### Export ⚠️ *Documentation pending*
+**Format filter** — three checkboxes under the Top Records list (`12"/LP`, `Album`, `Box Set`) restrict the list using **mutually-exclusive tiers** with precedence `Box Set > Album > 12"/LP`. Each release is classified into exactly one tier (or none) by the highest-priority tag it carries: a 12" LP tagged Album appears only under Album; a deluxe edition tagged Album+Box Set appears only under Box Set. Ticked checkboxes union the matching tiers; no boxes = no filter. Filter applies to the Top N list only — the Total Value, Avg per Record, and Market Data coverage stats stay calculated across the whole collection.
 
-> *Export tab was added. Full documentation to be written.*
->
-> **CSV Export columns (updated 2026-04-06):** artist, title, label, catno, format, year, folder, rating, notes, date_added, last_updated, purchase_price, purchase_currency, purchase_date, purchase_seller, media_condition, sleeve_condition, market_median, market_avg, market_high, market_low, market_last_sold, market_currency.
->
-> **What it does:** Dedicated Export tab for exporting collection data to CSV, JSON, or Markdown.
+### Export
 
-### 💷 Price Paid + Purchase Order (manual) ⚠️ *Documentation pending*
+**Tab: Export**
 
-> *Added 2026-04-25. Full documentation to be written.*
->
-> **What it does:** Bulk export/edit/import flow for filling in the `Price Paid` and `Purchase Order` custom fields for non-Discogs purchases (record store, eBay, etc.). Mirrors the Market Values CSV pattern but operates **per-instance** (so two copies of a release are separate rows) and writes to the `custom_fields` table only — does not touch the raw_json `purchase_*` fields used for Discogs marketplace orders.
->
-> - **📤 Export Price Paid CSV** — one row per instance with columns `instance_id, release_id, artist, title, year, Label, Catalog #, Price Paid, estimated, Purchase Order`. The `year`, `Label`, `Catalog #` columns are read-only reference data (useful for estimating prices); they are not written back on import. Tick **"Only instances with empty Price Paid"** to limit the export to rows that need filling.
-> - **`estimated` column** — set to `TRUE` (or `yes`/`1`/`y`) to mark the price as estimated; on import this appends ` (e)` to the value. Round-trip safe: export strips the `(e)` into the column for clean editing.
-> - **📥 Import Price Paid CSV** — matches on `instance_id`. Currency-normalises Price Paid to `ISO N.NN` format (`$15` → `AUD 15.00`, `£12.50` → `GBP 12.50`, bare `15` → `AUD 15.00` using your base currency, etc.). Shows a **confirmation dialog** with counts (writes / estimated / skipped / bad rows) before any DB write — say No to abort. Skips rows where both Price Paid and Purchase Order are blank.
-> - **Pushing to Discogs** — the import only writes to your local DB. To push the values up to Discogs, use **Collection → Organise Fields** (sub-tab inside the Collection tab), choose target field `Price Paid`, sync source `Use Local Value`, then Preview Sync → Execute Sync. Same pattern for `Purchase Order`.
+All export buttons live on the **Export** tab.
 
-### 📊 Auto-Estimate Empty Prices ⚠️ *Documentation pending*
+**Export location.** By default exports are saved to your Output Directory (alongside `discat.db`). To send them somewhere else — a Dropbox folder, a USB drive, a dedicated `exports` folder — use the **Export to:** field at the top of the tab: type a path or click **Browse…**, and the choice is remembered between sessions. Click **Use Output Dir** to clear it and return to the default. A status line shows exactly where exports will land. This affects exports only; imports always prompt you to pick the file to read.
 
-> *Added 2026-04-26. Full documentation to be written.*
->
-> **What it does:** Auto-fills the `Price Paid` custom field for collection items that don't have a Price Paid value yet, using a tier-based estimator keyed on (release year + format + origin) — calibrated for records bought new in Australia between 1988 and 2000.
->
-> - **Selection** — only items with NO existing Price Paid are touched. Real values, manually-entered values, and previously-estimated `(e)` values are all left alone. To re-estimate a row, clear its Price Paid first.
-> - **Preview window** — opens a sortable table showing artist / title / year / format / origin / estimated AUD per record, plus the total estimated spend. Cancel or Confirm before any DB write.
-> - **Tier table** — three formats (12" single / EP / LP), two origins (IMPORT / DOMESTIC by `country` field; falls back to label name + catno prefix when country missing), five year bands (early ≤1992 / mid 93-96 / late 97-2000 / post 01-09 / modern 2010+). Modern LPs with premium-pressing signals (180g, coloured vinyl, picture disc) get a $13-15 uplift to match the $35-45 retail of those reissues.
-> - **`(e)` suffix** — every estimate is written with the `(e)` marker so you can tell estimates apart from real prices in the List Collection treeview (legend below the column toggles explains this).
-> - **Auto-push to Discogs** — after the local DB write, asks "Push to Discogs?". Yes runs a background API push with a progress modal, writing each Price Paid value directly to the matching Discogs collection-instance custom field. No leaves the values local-only; you can push later via Collection → Organise Fields → `Use Local Value`.
-> - **Out of scope** — CDs, cassettes, and 7"-only releases return None and are skipped (the tier table is calibrated for 12"/LP vinyl).
+**Collection CSV columns:** artist, title, label, catno, format, year, folder, rating, notes, date_added, last_updated, purchase_price, purchase_currency, purchase_date, purchase_seller, media_condition, sleeve_condition, market_median, market_avg, market_high, market_low, market_last_sold, market_currency.
+
+### 💷 Price Paid + Purchase Order (manual)
+
+Bulk export/edit/import flow for filling in the `Price Paid` and `Purchase Order` custom fields for non-Discogs purchases (record store, eBay, etc.). Mirrors the Market Values CSV pattern but operates **per-instance** (so two copies of a release are separate rows) and writes to the `custom_fields` table only — does not touch the raw_json `purchase_*` fields used for Discogs marketplace orders.
+
+- **📤 Export Price Paid CSV** — one row per instance with columns `instance_id, release_id, artist, title, year, Label, Catalog #, Price Paid, estimated, Purchase Order`. The `year`, `Label`, `Catalog #` columns are read-only reference data (useful for estimating prices); they are not written back on import. Tick **"Only instances with empty Price Paid"** to limit the export to rows that need filling.
+- **`estimated` column** — set to `TRUE` (or `yes`/`1`/`y`) to mark the price as estimated; on import this appends ` (e)` to the value. Round-trip safe: export strips the `(e)` into the column for clean editing.
+- **📥 Import Price Paid CSV** — matches on `instance_id`. Currency-normalises Price Paid to `ISO N.NN` format (`$15` → `AUD 15.00`, `£12.50` → `GBP 12.50`, bare `15` → `AUD 15.00` using your base currency, etc.). Shows a **confirmation dialog** with counts (writes / estimated / skipped / bad rows) before any DB write — say No to abort. Skips rows where both Price Paid and Purchase Order are blank.
+- **Pushing to Discogs** — the import only writes to your local DB. To push the values up to Discogs, use **Collection → Organise Fields** (sub-tab inside the Collection tab), choose target field `Price Paid`, sync source `Use Local Value`, then Preview Sync → Execute Sync. Same pattern for `Purchase Order`.
+
+### 📊 Auto-Estimate Empty Prices
+
+Auto-fills the `Price Paid` custom field for collection items that don't have a Price Paid value yet, using a tier-based estimator keyed on (release year + format + origin) — calibrated for records bought new in Australia between 1988 and 2000.
+
+- **Selection** — only items with NO existing Price Paid are touched. Real values, manually-entered values, and previously-estimated `(e)` values are all left alone. To re-estimate a row, clear its Price Paid first.
+- **Preview window** — opens a sortable table showing artist / title / year / format / origin / estimated AUD per record, plus the total estimated spend. Cancel or Confirm before any DB write.
+- **Tier table** — three formats (12" single / EP / LP), two origins (IMPORT / DOMESTIC by `country` field; falls back to label name + catno prefix when country missing), five year bands (early ≤1992 / mid 93-96 / late 97-2000 / post 01-09 / modern 2010+). Modern LPs with premium-pressing signals (180g, coloured vinyl, picture disc) get a $13-15 uplift to match the $35-45 retail of those reissues.
+- **`(e)` suffix** — every estimate is written with the `(e)` marker so you can tell estimates apart from real prices in the List Collection treeview (legend below the column toggles explains this).
+- **Auto-push to Discogs** — after the local DB write, asks "Push to Discogs?". Yes runs a background API push with a progress modal, writing each Price Paid value directly to the matching Discogs collection-instance custom field. No leaves the values local-only; you can push later via Collection → Organise Fields → `Use Local Value`.
+- **Out of scope** — CDs, cassettes, and 7"-only releases return None and are skipped (the tier table is calibrated for 12"/LP vinyl).
 
 ---
 
@@ -512,13 +483,9 @@ The DisCat MCP server lets you query your collection and wantlist data conversat
 
 ### Setup
 
-#### Step 1 — Install the mcp package (once)
-Open a command prompt and run:
-```
-pip install mcp
-```
+`DisCatMCP.exe` is self-contained — like `DisCat.exe`, it bundles everything it needs, so there's nothing to install first.
 
-#### Step 2 — Configure Claude Desktop
+#### Step 1 — Configure Claude Desktop
 Edit `%APPDATA%\Claude\claude_desktop_config.json` (create it if it doesn't exist):
 ```json
 {
@@ -532,7 +499,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json` (create it if it doesn't exis
 ```
 Adjust the path to wherever `DisCatMCP.exe` lives alongside `DisCat.exe`.
 
-#### Step 3 — Restart Claude Desktop
+#### Step 2 — Restart Claude Desktop
 The DisCat tools will appear in Claude's tool list automatically.
 
 ---
@@ -604,173 +571,130 @@ Claude: [calls report_export with format=markdown]
 
 ---
 
-## 10. Web UI (Companion Browser App) ⚠️ *Documentation pending*
+## 10. Web UI (Companion Browser App)
 
-> *Added 2026-05-17. Full documentation to be written.*
->
-> **What it does:** A localhost, read-only browser view of your collection, wantlist, stats, market values and purchases. Start it from **Settings → 🌐 Web UI → Start** (or run `DisCatWeb.exe`), then open `http://127.0.0.1:8765/`. Runs only on this PC and cannot modify your data.
->
-> *Updated 2026-05-19:* full dark redesign per `DISCAT_STYLE_GUIDE.md`
-> (icon-only sidebar rail, near-black flat surfaces, metadata badges) plus
-> record cover thumbnails in the Collection grid and release detail.
->
-> *Updated 2026-05-19 (Part 2):* **double-click any Collection row** to open
-> its detail panel (the Details button still works too). Collection grid
-> columns trimmed — Price Paid and Upgrade removed, a **Rating** column
-> added (shown as `4 ★`), leaving room for Key/Energy later.
->
-> *Updated 2026-05-24 (Part 2):* Web companion is no longer read-only
-> for everything. **Playlist creation and management** added (see the
-> stub directly below). The Discogs link column and Upgrade-only
-> filter on the Collection grid were removed (search + add-to-playlist
-> is the new focus). **Start Web UI no longer auto-opens a browser
-> tab** — use the dedicated 🌐 Open in Browser button.
->
-> *Updated 2026-06-04 (per-view design pass):* **Release detail** got an
-> editorial hero (blurred cover backdrop + glow, big title, mono stats).
-> **Stats** page redesigned (hero header + readout strip + amber bars —
-> a bar-rendering bug where bars were invisible is fixed). **Market** now
-> shows the **release name** (not just the ID) and each row **expands** to
-> its cached marketplace listings. **Wantlist** gained a **search box**
-> (artist/title) and a compact stat strip. Market / Wantlist / Purchases
-> share a consistent toolbar and mono numerals.
+A localhost browser view of your collection, wantlist, stats, market values, purchases and playlists. Start it from **Settings → 🌐 Web UI → Start** (or run `DisCatWeb.exe`), then click **🌐 Open in Browser** (or visit `http://127.0.0.1:8765/`). It runs only on this PC — nothing is published. Everything except playlists is read-only; playlist building is the one writable feature (see below).
 
-### Playlists in the Web UI ⚠️ *Documentation pending*
+The interface is a dark, flat design with an icon-only sidebar rail, near-black surfaces, record-cover thumbnails in the Collection grid and a cover hero on the release detail panel. **Double-click any Collection row** to open its detail panel. The views:
 
-> *Added 2026-05-24. Full documentation to be written.*
->
-> **What it does:** The Web UI's first writable feature. Pick one or
-> more records on the Collection page (checkbox column), then a sticky
-> action bar appears with `Add to playlist` → pick existing or create
-> new. Manage playlists on the dedicated **📋 Playlists** page
-> (master/detail layout, view/edit modes). Each playlist item is a
-> **track** (not a whole record), so the same 12" can sit in a playlist
-> twice for different tracks (A1 then B2). Each picked track gets a
-> **Camelot key** (24-option dropdown, e.g. `8A — Am`) and an
-> **energy 1–10** (visualised as a coloured bar). Key + energy data
-> is per-track and shared across all playlists. **Export CSV** for
-> physical-media set sheets (Position, Artist, Track #, Track Title,
-> Key, Energy, Album, Year, Label, Catalog #, Format, Folder, Rating,
-> Notes, Discogs URL).
->
-> *Updated 2026-06-04 (set-list pass):* Camelot keys now show as **colour
-> chips** (wheel-coloured dot + code) and the **energy bar** uses a warm
-> green→amber→hot ramp. New **playlist-only rating** (1–5 stars per item) —
-> local to the playlist, never synced to Discogs, so it won't be overwritten
-> by a re-download. Playlist columns are **sortable** (Key sorts musically by
-> the Camelot wheel); **Save as set order** commits the current sort as the
-> stored playlist order, and the drag handle returns when unsorted. Columns
-> are **resizable** with a **Reset view** button to restore defaults.
->
-> **Data model:** new SQLite tables `playlists`, `playlist_items`,
-> `track_keys` (schema v10 / v11 / v12). Manual entry today; future
-> MIK import will populate `track_keys` with `source='mik'`.
+- **Collection** — sortable grid with cover thumbnails, a **Rating** column (`4 ★`), live search and add-to-playlist.
+- **Release detail** — editorial layout: blurred cover backdrop, large title, key stats in monospace.
+- **Stats** — collection breakdowns with a hero header and amber bar charts.
+- **Market** — per-release values shown by release name; each row **expands** to its cached marketplace listings.
+- **Wantlist** — searchable by artist/title, with a compact stat strip.
+- **Purchases** — your order history in a consistent toolbar layout.
 
-### Web UI Settings page ⚠️ *Documentation pending*
+### Playlists in the Web UI
 
-> *Added 2026-05-24. Full documentation to be written.*
->
-> **What it does:** New **⚙️ Settings** page in the Web UI (sidebar
-> bottom). Two display preferences, both persisted per-browser via
-> localStorage: **Cover thumbnails** (Small 32 / Medium 48 / Large 64
-> px — applied to the Collection and Playlists grids) and **Font
-> size** (Small 12 / Medium 14 / Large 16 px — applied to the root
-> `<html>` so it scales the whole app). Doesn't sync with the
-> desktop GUI; web-only.
+Playlists are the Web UI's one writable feature. On the Collection page, tick one
+or more records (checkbox column) and a sticky action bar appears with **Add to
+playlist** → pick an existing playlist or create a new one. Manage playlists on the
+dedicated **📋 Playlists** page (master/detail layout, view/edit modes).
 
-### Web UI design refresh — "Workbench × Booth" ⚠️ *Documentation pending*
+Each playlist item is a **track**, not a whole record, so the same 12" can appear in
+a playlist twice for different tracks (A1 then later B2). Every track carries a
+**Camelot key** (24-option dropdown, e.g. `8A — Am`, shown as a wheel-coloured chip)
+and an **energy** rating 1–10 (a warm green→amber→hot bar). Key and energy are stored
+per track and shared across all playlists. Each item also has a **playlist-only
+rating** (1–5 stars) that's local to the playlist and never synced to Discogs, so a
+re-download won't overwrite it.
 
-> *Added 2026-05-24 Part 2. Full documentation to be written.*
->
-> **What it does:** Foundation aesthetic pass on the web companion.
-> **IBM Plex Sans + Plex Sans Condensed + JetBrains Mono** replace
-> system-ui (mono numerals enable tabular figures so columns don't
-> jitter on sort). **Amber accent** (#f59e0b) replaces blue throughout;
-> a **full Camelot wheel colour system** is seeded for the next pass
-> to consume on key/energy displays. **Custom vinyl-tool SVG icons**
-> replace emoji in the sidebar (tonearm icon for Settings, vinyl-record
-> for the brand mark — which slowly rotates). A subtle **film grain
-> overlay** and a **warm radial atmosphere** behind the topbar add
-> depth without competing with content. Per-view layout refreshes
-> (Collection row hierarchy, Playlists row hierarchy, ReleaseDetail
-> editorial) are scheduled for the next session.
+Columns are **sortable** (Key sorts musically around the Camelot wheel) and
+**resizable**; **Save as set order** commits the current sort as the stored order,
+and **Reset view** restores the defaults. **Export CSV** produces a set sheet
+(Position, Artist, Track #, Track Title, Key, Energy, Album, Year, Label, Catalog #,
+Format, Folder, Rating, Notes, Discogs URL).
 
-### Right-click Cut / Copy / Paste ⚠️ *Documentation pending*
+Keys and energy are entered manually today; a future Mixed In Key import will be able
+to populate them automatically.
 
-> *Added 2026-05-17. Full documentation to be written.*
->
-> **What it does:** Right-click any text field or log window for Cut / Copy / Paste / Select All. Cut/Paste are greyed out on read-only fields and logs.
+### Web UI Settings page
 
-### Multi-monitor dialog placement ⚠️ *Documentation pending*
+New **⚙️ Settings** page in the Web UI (sidebar
+bottom). Two display preferences, both persisted per-browser via
+localStorage: **Cover thumbnails** (Small 32 / Medium 48 / Large 64
+px — applied to the Collection and Playlists grids) and **Font
+size** (Small 12 / Medium 14 / Large 16 px — applied to the root
+`<html>` so it scales the whole app). Doesn't sync with the
+desktop GUI; web-only.
 
-> *Added 2026-05-17. Full documentation to be written.*
->
-> **What it does:** Popups and dialogs now open over the DisCat window instead of the primary monitor.
+### Web UI design refresh — "Workbench × Booth"
 
-### 🔄 Refresh Record Info button (Edit Record popup) ⚠️ *Documentation pending*
+Foundation aesthetic pass on the web companion.
+**IBM Plex Sans + Plex Sans Condensed + JetBrains Mono** replace
+system-ui (mono numerals enable tabular figures so columns don't
+jitter on sort). **Amber accent** (#f59e0b) replaces blue throughout;
+a **full Camelot wheel colour system** is seeded for the next pass
+to consume on key/energy displays. **Custom vinyl-tool SVG icons**
+replace emoji in the sidebar (tonearm icon for Settings, vinyl-record
+for the brand mark — which slowly rotates). A subtle **film grain
+overlay** and a **warm radial atmosphere** behind the topbar add
+depth without competing with content. Per-view layout refreshes
+(Collection row hierarchy, Playlists row hierarchy, ReleaseDetail
+editorial) are scheduled for the next session.
 
-> *Added 2026-05-24. Full documentation to be written.*
->
-> **What it does:** A button in the fixed top strip of the Edit
-> Record popup that re-fetches the Discogs release metadata for the
-> current record. Updates artist, title, year, label, format,
-> country, genres, styles, and the raw `detailed_metadata` block
-> in one shot. Your folder, rating, custom fields and purchase data
-> are not touched. Useful when you've fixed metadata on Discogs
-> and want it reflected locally without re-downloading the whole
-> collection. The List Collection grid auto-refreshes on success.
+### Right-click Cut / Copy / Paste
 
-### Edit Record popup — top action strip ⚠️ *Documentation pending*
+Right-click any text field or log window for Cut / Copy / Paste / Select All. Cut/Paste are greyed out on read-only fields and logs.
 
-> *Restructured 2026-05-24. Full documentation to be written.*
->
-> **What it does:** Save, Cancel and Refresh Record Info now live in
-> a fixed strip at the top of the Edit Record popup (instead of
-> Save/Cancel at the bottom). The strip stays visible while you
-> scroll the form below. Refresh Record Info sits on the left with
-> a short hint explaining what it does; Save and Cancel sit on the
-> right.
+### Multi-monitor dialog placement
 
-### Notes field — auto-truncated to fit Discogs (255 chars) ⚠️ *Documentation pending*
+Popups and dialogs now open over the DisCat window instead of the primary monitor.
 
-> *Added 2026-05-24. Full documentation to be written.*
->
-> **What it does:** The Notes custom field on Discogs is a
-> single-line textarea capped at 255 characters and won't accept
-> newlines. If you enter a longer Notes value (or any single-line
-> textarea custom field), DisCat now collapses newlines to spaces
-> and trims the value at the nearest word boundary before sending
-> it — the same cleaned value is also written to the local DB so
-> the two stores stay byte-equal and Sync Custom Fields doesn't
-> see a phantom diff every run. The save warning popup tells you
-> exactly what got cut (e.g. `Notes: 482 → 247 chars`).
->
-> If you need longer per-copy notes, raise it as a feature request
-> for a separate local-only Notes field — already on the backlog.
+### 🔄 Refresh Record Info button (Edit Record popup)
 
-### List Collection — auto-load + Reload Collection ⚠️ *Documentation pending*
+A button in the fixed top strip of the Edit
+Record popup that re-fetches the Discogs release metadata for the
+current record. Updates artist, title, year, label, format,
+country, genres, styles, and the raw `detailed_metadata` block
+in one shot. Your folder, rating, custom fields and purchase data
+are not touched. Useful when you've fixed metadata on Discogs
+and want it reflected locally without re-downloading the whole
+collection. The List Collection grid auto-refreshes on success.
 
-> *Added 2026-05-24. Full documentation to be written.*
->
-> **What it does:** The List Collection sub-tab now auto-loads the
-> grid the first time you switch to it in a session. The button
-> formerly labelled **Load Collection** is now **🔄 Reload
-> Collection** — use it to force a manual refresh from the local DB
-> (e.g. after external edits).
+### Edit Record popup — top action strip
 
-### List Collection — column visibility + reorder now sticky ⚠️ *Documentation pending*
+Save, Cancel and Refresh Record Info now live in
+a fixed strip at the top of the Edit Record popup (instead of
+Save/Cancel at the bottom). The strip stays visible while you
+scroll the form below. Refresh Record Info sits on the left with
+a short hint explaining what it does; Save and Cancel sit on the
+right.
 
-> *Fixed 2026-05-24. Full documentation to be written.*
->
-> **What it does:** Two bugs fixed on the Columns checkbox row and
-> the ↕ Reorder Columns dialog:
-> - **Reorder survives toggling visibility.** Previously, ticking
->   any checkbox would reset the column order back to default.
->   Now your manual ordering is preserved when you hide or show
->   columns.
-> - **Deselections stick across sessions.** Previously, default-on
->   columns you'd deselected would come back the next time you
->   opened DisCat. Now they stay hidden until you tick them again.
+### Notes field — auto-truncated to fit Discogs (255 chars)
+
+The Notes custom field on Discogs is a
+single-line textarea capped at 255 characters and won't accept
+newlines. If you enter a longer Notes value (or any single-line
+textarea custom field), DisCat now collapses newlines to spaces
+and trims the value at the nearest word boundary before sending
+it — the same cleaned value is also written to the local DB so
+the two stores stay byte-equal and Sync Custom Fields doesn't
+see a phantom diff every run. The save warning popup tells you
+exactly what got cut (e.g. `Notes: 482 → 247 chars`).
+
+If you need longer per-copy notes, raise it as a feature request
+for a separate local-only Notes field — already on the backlog.
+
+### List Collection — auto-load + Reload Collection
+
+The List Collection sub-tab now auto-loads the
+grid the first time you switch to it in a session. The button
+formerly labelled **Load Collection** is now **🔄 Reload
+Collection** — use it to force a manual refresh from the local DB
+(e.g. after external edits).
+
+### List Collection — column visibility + reorder now sticky
+
+Two bugs fixed on the Columns checkbox row and
+the ↕ Reorder Columns dialog:
+- **Reorder survives toggling visibility.** Previously, ticking
+  any checkbox would reset the column order back to default.
+  Now your manual ordering is preserved when you hide or show
+  columns.
+- **Deselections stick across sessions.** Previously, default-on
+  columns you'd deselected would come back the next time you
+  opened DisCat. Now they stay hidden until you tick them again.
 
 ---
 
@@ -780,11 +704,11 @@ Claude: [calls report_export with format=markdown]
 
 If you update a record on the Discogs website (e.g. change a condition grade, add a note, or update a custom field), you need to re-download your collection — and you must do it **with "Use cache" unchecked**.
 
-> **Why:** "Use cache" reads from the JSON saved during your last download. It skips the Discogs API entirely, so any web edits made since then won't come through.
+**Why:** "Use cache" reads from the JSON saved during your last download. It skips the Discogs API entirely, so any web edits made since then won't come through.
 
 To get the updated data: run **⬇️ Download Collection** with **Use cache** unchecked. This fetches fresh data from Discogs.
 
-> **Tip:** To avoid a full re-download, make collection edits directly in DisCat instead — right-click any record in the Collection tab and choose **Edit Record**. Changes are saved to the local database and synced to Discogs immediately via the API.
+**Tip:** To avoid a full re-download, make collection edits directly in DisCat instead — right-click any record in the Collection tab and choose **Edit Record**. Changes are saved to the local database and synced to Discogs immediately via the API.
 
 ---
 
