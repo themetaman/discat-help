@@ -47,6 +47,7 @@ Everything DisCat creates lives in your **Output Directory** — there's no sepa
 
 - **`discat.db`** — your whole collection, wantlist, purchases, custom fields, market values and playlists. This single SQLite file *is* your database; back it up and you've backed up everything.
 - **`covers/`** — the cached front-cover images (created when you use 📷 Fetch Covers).
+- **`discat.log`** — a small diagnostic log (warnings and errors only, by default). If something misbehaves, this file is what to look at — see [Tips & Troubleshooting](#11-tips--troubleshooting). It's capped at 1 MB with a few rotated backups, so it never grows beyond a few megabytes.
 - **CSV exports** — every export (collection, enriched collection, wantlist coverage, market values, manual purchase history) lands here **by default**, named automatically (e.g. `discogs_collection_2026-06-09_1430.csv`) so exporting never asks you where to save. You can send exports to a different folder with the **Export to:** field on the Export tab (see below). (Imports, by contrast, always let you pick the file to read.)
 
 If you never set an Output Directory, DisCat falls back to the folder it's run from — which is easy to lose track of, so it's worth setting one deliberately.
@@ -325,6 +326,8 @@ Repeat for each field you want to sync.
 ### Organise Folders
 
 Moves records between Discogs folders based on style/genre matching rules. **Source folder** and **Target folder** dropdowns auto-populate from the local DB on startup (click ↻ to refresh). Match modes: Style (contains any), Style (contains all), Genre (contains all). A "within first N styles" limiter restricts matching to the most prominent styles on a release.
+
+> **⚠️ *Documentation pending* — case/separator-insensitive matching (added 2026-06-10).** Style/genre matching now ignores case and separators: `synth pop`, `Synth-pop` and `Synthpop` all match a `Synth-pop` tag, and matching is substring-based (`progressive` catches `Progressive House`). The "First Style == folder" mode is likewise case/separator-insensitive. Full write-up to follow.
 
 ### Custom Field Audit popout + Setup dialog
 
@@ -699,6 +702,31 @@ the ↕ Reorder Columns dialog:
 ---
 
 ## 11. Tips & Troubleshooting
+
+### Something went wrong and the app didn't say why — check the log file
+
+DisCat keeps a diagnostic log, **`discat.log`**, in the same folder as
+`discat.db` (your Output Directory). It records warnings, errors and — most
+usefully — anything that crashed silently behind the scenes, like a button
+click that appeared to do nothing. If you're reporting a problem, attach
+this file: it usually contains the actual reason.
+
+A few things worth knowing:
+
+- **It's quiet by default.** A normal session writes only a handful of lines
+  (app start/exit plus any warnings). Nothing you do in the app is "tracked" —
+  it only records problems.
+- **More detail when troubleshooting:** add `LOG_LEVEL=DEBUG` to `config.env`
+  (the file next to `DisCat.exe`) and restart DisCat. Remove the line (or set
+  it back to `INFO`) when you're done. `INFO` is the default, so setting it
+  explicitly changes nothing.
+- **Less detail:** `LOG_LEVEL=ERROR` records only outright failures. There is
+  no full off switch — the point of the log is that the evidence already
+  exists when something goes wrong.
+- **It can't fill your disk.** The file is capped at 1 MB and rotates through
+  3 backups (`discat.log.1`, `.2`, `.3`) — about 4 MB worst case, ever.
+
+---
 
 ### I edited a record on Discogs but DisCat still shows the old data
 
