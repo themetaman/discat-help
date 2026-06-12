@@ -587,6 +587,38 @@ The interface is a dark, flat design with an icon-only sidebar rail, near-black 
 - **Wantlist** — searchable by artist/title, with a compact stat strip.
 - **Purchases** — your order history in a consistent toolbar layout.
 
+### Schema alignment readout (Settings → 🌐 Web UI)
+
+DisCat, the Web UI and your database all need to agree on the database
+*schema version* — when you update one EXE but not the other, they can drift.
+The **Settings → 🌐 Web UI** panel shows a one-line readout so you can see at
+a glance whether everything matches:
+
+```
+Schema —  discat.db v14   ·   DisCat v14   ·   Web v14
+```
+
+- **`discat.db`** — the version your database file is currently at.
+- **`DisCat`** — the version this build of the desktop app expects.
+- **`Web`** — the version the *running* `DisCatWeb.exe` build expects
+  (shows `(stopped)` when the Web UI isn't running).
+
+The line is colour-coded, with a hint underneath telling you exactly what to
+do:
+
+- **Green** — all aligned ✅ (or DB & DisCat aligned with the Web UI stopped).
+- **Red** — your DB is *behind* DisCat. Harmless: DisCat migrates the
+  database automatically on launch, so just reopen it.
+- **Orange** — a mismatch involving the Web UI. Most commonly the Web build
+  is older than the database ("rebuilt DisCat.exe but DisCatWeb.exe is
+  stale") — rebuild/update `DisCatWeb.exe`. If the Web build is *newer* than
+  the DB, reopen DisCat first so it migrates, then reload the browser page.
+- **Gray** — no `discat.db` yet; run a Download in the Collection tab first.
+
+The readout refreshes every few seconds. Checking the versions never
+modifies your database — the DB is read in read-only mode, and the Web
+version comes from the running server itself.
+
 ### Playlists in the Web UI
 
 Playlists are the Web UI's one writable feature. On the Collection page, tick one
@@ -702,6 +734,22 @@ the ↕ Reorder Columns dialog:
 ---
 
 ## 11. Tips & Troubleshooting
+
+### The ℹ️ Help tab — these guides, inside the app
+
+The last tab in DisCat is **ℹ️ Help**: an About panel plus a **📚 User
+Guides** section with both guides (this User Guide and the MCP Guide). Each
+guide has two buttons:
+
+- **📂 Open** — opens the copy bundled inside the EXE with your default
+  Markdown/text viewer. Works completely offline; it matches the version of
+  DisCat you're running.
+- **↗ GitHub** — opens the same guide rendered nicely in your browser (on
+  the public `discat-help` repository — no GitHub account needed). This is
+  always the latest published version.
+
+So if you're stuck without this file handy: the answer is on the ℹ️ Help
+tab.
 
 ### Something went wrong and the app didn't say why — check the log file
 
