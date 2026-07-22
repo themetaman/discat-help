@@ -144,6 +144,12 @@ record.
 
 Edit Record now shows the record's tracklist in a read-only monospace block between Record Info and Purchase Details. Format: `position: [artist — ]title - duration` (e.g. `A1: Let's Go (Fast Eddie's Mix) - 5:08`). Compilations show the per-track artist with an em-dash separator; single-artist releases skip it. Duration appears only when Discogs has it (often blank for vinyl). Capped at 8 visible lines with internal scroll for long tracklists. Selectable so you can copy a track title; otherwise read-only. Skipped entirely when the record was downloaded without "Genres & Styles" enabled (no tracklist data to show).
 
+### 🎵 Track Search tab ⚠️ *Documentation pending*
+
+> *This feature was added 2026-07-22. Full documentation to be written.*
+>
+> **What it does:** A dedicated Collection sub-tab listing every track across your whole collection (position, track title, track artist, duration, plus the owning record and its year/folder). Filters live as you type — matches track title, track artist, and record artist/title. Double-click a track to open the owning record in Edit Record; 🔄 Reload Tracks refreshes after a download. There's also a companion **🎵 incl. tracks** checkbox on the List Collection search row that makes the normal grid search match track names too.
+
 ### Purchase Order — manual edit toggle
 
 The `Purchase Order` custom field in Edit Record's My Collection section is read-only by default (so a Discogs marketplace order link can't be accidentally overwritten) but unlockable via a checkbox: **✏️ Edit manually (for non-Discogs purchases)**. Tick it and the read-only label is replaced with an editable text box pre-populated with the current value, letting you log a Bandcamp / indie shop / record store invoice reference. Save round-trips through the normal custom-field sync path: stored locally and pushed to Discogs. Untick (or never tick) and the field stays at its current value — no spurious sync events. Intended for collections that mix Discogs marketplace orders with purchases from other sources.
@@ -586,6 +592,18 @@ The interface is a dark, flat design with an icon-only sidebar rail, near-black 
 - **Market** — per-release values shown by release name; each row **expands** to its cached marketplace listings.
 - **Wantlist** — searchable by artist/title, with a compact stat strip.
 - **Purchases** — your order history in a consistent toolbar layout.
+
+### DisCat Mobile (phone PWA) ⚠️ *Documentation pending*
+
+> *This feature was added 2026-06-13. Full documentation to be written.*
+>
+> **What it does:** A simple phone app (served at `/m` by the web companion) for
+> "is this record in my collection?" while record shopping — searches Discogs
+> directly, checks an offline-cached copy of your collection (works with no
+> signal), and shows your details, a master-release link and YouTube videos.
+> Reach it on your phone via your PC's LAN IP (`DISCAT_WEB_HOST=0.0.0.0` in
+> `config.env`); install as a real app needs HTTPS (Tailscale). See
+> `MOBILE_APP_PLAN.md`.
 
 ### Schema alignment readout (Settings → 🌐 Web UI)
 

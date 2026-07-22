@@ -238,6 +238,14 @@ Bundled genre reference data from *Ishkur's Guide to Electronic Music* — 156 g
 
 ---
 
+### Track search — `track_search` ⚠️ *Documentation pending*
+
+> *This tool was added 2026-07-22. Full documentation to be written.*
+>
+> **What it does:** Searches individual track titles (and per-track artists on compilations) across the whole collection — ask *"which of my records has Blue Monday on it?"*. Each result names the matching track and the record it's on; the returned `instance_id` chains into `collection_item` for full record details.
+
+---
+
 ### Finding duplicates — `find_duplicates`
 
 *"Do I have any duplicate releases?"*
