@@ -150,6 +150,55 @@ Edit Record now shows the record's tracklist in a read-only monospace block betw
 >
 > **What it does:** A dedicated Collection sub-tab listing every track across your whole collection (position, track title, track artist, duration, plus the owning record and its year/folder). Filters live as you type — matches track title, track artist, and record artist/title. Double-click a track to open the owning record in Edit Record; 🔄 Reload Tracks refreshes after a download. There's also a companion **🎵 incl. tracks** checkbox on the List Collection search row that makes the normal grid search match track names too.
 
+### 👤 Credit search — remixers, producers and aliases
+
+Tick **👤 incl. credits** on the List Collection search row and the grid search
+also looks inside every credit on the record: release artists, release-level
+credits, per-track artists, and per-track credits. Untick it and you're back to
+the normal search.
+
+**Why you want it.** The `Artist` column only ever holds the *release* artist —
+the name on the front of the sleeve. Everyone else is invisible. On a
+1,686-item collection there are **6,084 credited artists, and 4,734 of them
+never appear as a release artist at all.** Every remixer, producer, engineer,
+writer and featured artist falls in that gap. Before this existed, searching
+`Masters At Work` found only records released under that name; now it finds the
+eleven records they're actually on.
+
+**It follows aliases.** Discogs records that Bassbin Twins, Peter Tall, Doom
+Selector, Twix Twins and Pete Bassbin are all the same person, so a search for
+any one of those names returns records credited to *any* of them. A worked
+example from this collection: searching `Bassbin Twins` returns three records —
+a track on a compilation, a remix on the Electroliners 12", and Metro L.A.'s
+*The Thinka*, where the credit reads "Peter Tall". Discogs's own artist-page
+counter says 2, because it doesn't follow the alias; DisCat says 3. Searching
+`Peter Tall` returns the same three.
+
+**You can search roles too.** Type `remix` with the box ticked to list
+everything carrying a remix credit, or `engineer`, or `written by`.
+
+**What it needs:**
+
+- **Detailed metadata.** Credits come from the same place as the tracklist, so
+  records downloaded without "Genres & Styles" enabled have none. Re-download
+  them if a record you expect is missing.
+- **The offline Discogs catalogue** (`discogs-db/` beside the EXE) for the
+  alias half only. Without it credit search still works on the names printed on
+  the record — it just stops widening them to the artist's other aliases.
+  Aliases for your collection are resolved once, in the background, the first
+  time the grid loads after an update; only newly-seen artists are looked up
+  after that, so it costs nothing on later loads.
+
+**Worth knowing:** Discogs marks some credits with no artist page behind them
+(mostly "Written By" and "Executive Producer" — 101 of them here). Those are
+searchable by name, but having no artist ID they can't be alias-matched. And a
+credit is matched by artist ID, not by number alone: the label *NOW! Records*
+happens to be numbered 7217, the same number as the artist Bassbin Twins, and
+it is correctly left out of the results.
+
+The same search is available to Claude Desktop as the `credit_search` tool, and
+to the web companion at `GET /api/credits/search`.
+
 ### Purchase Order — manual edit toggle
 
 The `Purchase Order` custom field in Edit Record's My Collection section is read-only by default (so a Discogs marketplace order link can't be accidentally overwritten) but unlockable via a checkbox: **✏️ Edit manually (for non-Discogs purchases)**. Tick it and the read-only label is replaced with an editable text box pre-populated with the current value, letting you log a Bandcamp / indie shop / record store invoice reference. Save round-trips through the normal custom-field sync path: stored locally and pushed to Discogs. Untick (or never tick) and the field stays at its current value — no spurious sync events. Intended for collections that mix Discogs marketplace orders with purchases from other sources.
@@ -180,7 +229,12 @@ Scrapes Discogs sales history for collection releases and stores median, average
 
 - **📈 Fetch Market Values — All** — scrapes every release in the collection. **Skips releases marked `(M)` (manual entries)** so hand-entered values are sticky. Status bar shows the skip count.
 - **📈 Fetch Market Values — Selected** — scrapes only the rows you've selected in the collection list (Ctrl-click or Shift-click for multi-select). Will overwrite manual entries — explicit selection counts as deliberate.
-- **Listings fallback** — if a release has no Discogs sales history (typically new pressings), DisCat scrapes the current marketplace listings page instead and computes median/avg/high/low across asking prices. These values display with an `(L)` suffix to flag that they're derived from listings, not completed sales (so expect a slight high-bias).
+- **Listings fallback** — if a release has no Discogs sales history (typically new pressings), DisCat scrapes the current marketplace listings page instead and computes median/avg/high/low across asking prices. These values display with an `(L)` suffix to flag that they're derived from listings, not completed sales (so expect a slight high-bias). **Listings that won't ship to your country are included** — a seller's shipping policy doesn't change what the record is worth, and an overseas listing is often the one that sets the high.
+- **"No market data" report** ⚠️ *Documentation pending*
+
+  > *Added 2026-08-27. Full documentation to be written.*
+  >
+  > **What it does:** when a fetch finishes, any releases that returned nothing are now reported instead of passing silently — a dialog names each one and why (up to 10 releases; a count plus a log pointer for bigger runs), and the status bar reads `Market values loaded ✓ (N fetched, M no data)`. Per-release reasons are always written to `discat.log` next to `discat.db`.
 - **Manual override (Edit Record)** — open Edit Record and scroll to the "Market Values (manual override)" section. Enter Median / Average / High / Low / Currency / Last Sold by hand. Saved values appear with an `(M)` suffix in the collection list's Mkt columns.
 - **📤 Export Market Values CSV / 📥 Import Market Values CSV** (Export tab) — round-trip bulk editing. Export writes one row per release including blanks for unfetched ones; tick "Only releases without market values" to limit to the gaps. Edit median/avg/high/low/currency in Excel, then Import — matched on `release_id`; rows where every value is blank are skipped (so a no-op round-trip won't blank existing data); imported rows are always tagged `(M)`. Currency accepts either symbol (`A$`, `£`) or ISO code (`AUD`, `GBP`) — both end up stored as ISO.
 
@@ -193,7 +247,7 @@ DisCat now treats each copy of a release as an independent instance. If you've b
 A small gray reference line above the collection table reminds you what the three short suffixes mean when they appear in price columns:
 - **(e)** — the Price Paid value is an estimate (entered via the bulk CSV with the `estimated` column set to TRUE), not a known price from a receipt or order.
 - **(M)** — Market values were entered manually (via Edit Record's manual override or the Market Values CSV import), not scraped from Discogs.
-- **(L)** — Market values were derived from current marketplace listings rather than completed sales — typically for new pressings with no sales history yet. Expect a slight high-bias compared with sold-price medians.
+- **(L)** — Market values were derived from current marketplace listings rather than completed sales — typically for new pressings with no sales history yet. Expect a slight high-bias compared with sold-price medians. Region-restricted listings count toward these figures too, so an `(L)` value may reflect a record you can't currently buy from where you are.
 
 ### Catalog Cover Photos
 
@@ -375,10 +429,27 @@ A sync source that pushes the value currently stored in your **local custom_fiel
 
 ## 7. Wantlist
 
-**Tab: Wantlist** (two sub-tabs: **Coverage** and **Releases**)
+**Tab: Wantlist** (three sub-tabs: **My Wantlist**, **Coverage** and **Releases**)
 
 ### Sync your wantlist first
 Click **📥 Sync Wantlist** to pull your current wantlist from Discogs into the local database. Always do this before scanning if your wantlist has changed.
+
+### My Wantlist sub-tab
+Your whole wantlist in one grid — the equivalent of List Collection, for records you don't own yet. It loads the first time you open the tab; **🔄 Reload Wantlist** refreshes it.
+
+Columns: Artist, Title, Year, Format, Label, Rating, Mkt Med / Avg / High, Listings, Status, Date Added. Tick or untick columns in the **Columns** bar, and **↕ Reorder Columns** to rearrange them.
+
+**Where the prices come from.** Unlike the collection's Market Values (which scrape sales history), these figures are calculated from the marketplace listings already cached by **🔍 Scan Market** on the Coverage sub-tab — what sellers are asking right now, converted into your base currency using the stored exchange rates. That means:
+- Prices appear only for releases you've scanned. The **Status** column tells you which is which: **For Sale** (listings cached), **Not Listed** (scanned, nobody selling), **Pending** (never scanned — run Scan Market).
+- No extra scraping is needed to populate this tab, and no Chrome session either.
+- Listings priced in a currency missing from your exchange rates are excluded, and the count is shown next to the item total.
+- **Parking listings are excluded.** Sellers sometimes list a record they don't actually want to sell at an absurd price. One wantlist item had a €541,919 listing sitting against a €65 median, which by itself pushed that release's average to over 30,000. Any listing more than **10× the median** is dropped from Mkt Avg and Mkt High (the median itself is immune to this, which is why it's the reference). The count of excluded listings is shown next to the item total. The trade-off is that a genuinely rare copy priced far above the rest is dropped too — the median and the Listings count still tell you it existed.
+
+**⭐ Desire rating.** Select one or more rows (Ctrl-click or Shift-click for several), pick a value 0–5, and click **⭐ Apply Rating**. The rating is saved **to Discogs**, not just locally — so it survives a wantlist sync and shows up on the Discogs website too. Anything that fails is listed in a warning dialog rather than passing silently.
+
+Rating your wantlist is what makes the **Min Rating** filter on the Coverage sub-tab useful — see below.
+
+**Filters:** search box (matches artist, title, year, format and label), **Min rating**, and **Status**. **Double-click** a row to open the release on Discogs.
 
 ### Coverage sub-tab
 Finds which sellers on the Discogs marketplace stock the most items from your wantlist — ranked by coverage and price.
@@ -394,6 +465,10 @@ Finds which sellers on the Discogs marketplace stock the most items from your wa
 Sellers are ranked by coverage (most of your wants first), then by total price. Columns: Seller, Coverage, Total Price, Currency, Rating, Country, Availability.
 
 **Filter by condition** using the Min Media and Min Sleeve dropdowns. **Hide unavailable** checkbox filters out region-restricted sellers (those who can't ship to you).
+
+**Min Rating** narrows the ranking to the records you actually care about. By default a seller holding ten records you mildly want outranks one holding the two you'd cross the road for. Set Min Rating to `4+` and only wantlist items you've rated 4 or 5 (in the My Wantlist sub-tab) are counted, so the ranking becomes "who has my grails". Unrated items are excluded whenever Min Rating is above `Any`, so rate some records first or the list will come back empty. The filter recalculates instantly from cached data — no rescan. It's available in the **⧉ Pop Out** window too.
+
+**Wtd Score** column weights each seller's coverage by your desire ratings (a 5-star want counts 5, an unrated one counts 1). It's a sum, so a large pile of low-rated records can still outweigh a couple of grails — use Min Rating when you want the grails alone.
 
 **Single-click a seller row** → shows that seller's listings in the bottom pane. **Double-click** → opens `discogs.com/seller/{name}/mywants` in your browser.
 
@@ -421,8 +496,13 @@ Browse every marketplace listing for a single wantlist item.
 
 Shows a live AVG + MEDIAN of the currently-visible listings, converted to your base currency, sitting next to the listing count. Updates as Min Media / Min Sleeve / Ships From / Hide unavailable change — so the number always reflects "what this release costs at the conditions I'd actually accept". Listings priced in a currency missing from your stored exchange rates are excluded with a count.
 
+Listings more than 10× the median are excluded from the average as parking listings — the same rule the My Wantlist tab uses, described above.
+
 ### Shared Chrome session
 If you already logged in on the Coverage tab, the same Chrome session is reused in Releases — no second login needed.
+
+### Login persists across restarts
+Chrome now remembers your Discogs login between app sessions — log in once and DisCat won't prompt again on future scans, even after closing and reopening DisCat. This applies to Wantlist scanning, Market Values, Releases listings, and the Purchase History web scraper. (Login is stored locally in a `chrome_profile` folder next to `discat.db`, not synced anywhere.) If you ever need to force a fresh login — e.g. you changed your Discogs password — delete that folder and DisCat will prompt again next time.
 
 ---
 
@@ -586,7 +666,7 @@ A localhost browser view of your collection, wantlist, stats, market values, pur
 
 The interface is a dark, flat design with an icon-only sidebar rail, near-black surfaces, record-cover thumbnails in the Collection grid and a cover hero on the release detail panel. **Double-click any Collection row** to open its detail panel. The views:
 
-- **Collection** — sortable grid with cover thumbnails, a **Rating** column (`4 ★`), live search and add-to-playlist.
+- **Collection** — sortable grid with cover thumbnails, a **Rating** column (`4 ★`), live search and add-to-playlist. Two columns worth knowing about: **Added** sorts by the date a record joined your collection, the same sort the desktop app offers (it sorts on the real timestamp, not the displayed date, so records added on the same day keep their true order); and the **Credits** tick box beside the search widens the search to remixers, producers, engineers and aliases exactly as the desktop 👤 incl. credits box does, listing the credits that matched in a strip above the grid so you can see *why* a record came back. Click a credit to open that record.
 - **Release detail** — editorial layout: blurred cover backdrop, large title, key stats in monospace.
 - **Stats** — collection breakdowns with a hero header and amber bar charts.
 - **Market** — per-release values shown by release name; each row **expands** to its cached marketplace listings.
@@ -660,6 +740,38 @@ Format, Folder, Rating, Notes, Discogs URL).
 
 Keys and energy are entered manually today; a future Mixed In Key import will be able
 to populate them automatically.
+
+#### 📤 OBS panel — import and export
+
+The playlist page talks both ways to the **StreamOverlay** now-playing panel,
+so a set built in one can be moved to the other. Both directions work by **copy
+and paste**, because an OBS dock can't download or open files — the panel's own
+import is a paste box, and this matches it.
+
+- **⬇ Import** (playlist page header) opens a box: paste the JSON from the
+  panel's export, or pick a saved `.json` file. The playlist is created under the
+  name in the paste, with each row's **track pick** and **note** carried across.
+- **To OBS panel** (next to Export CSV, with a playlist open) builds the same
+  format for the playlist you're looking at and gives you a **Copy** button.
+  Paste it into the panel's import box.
+
+Two things the import deliberately does *not* do. It **doesn't skip duplicates** —
+the same record twice in a set is normal for a DJ, so both rows arrive. And it
+**doesn't silently drop rows it can't place**: a record in the paste that isn't in
+your collection is reported back as *not owned*, with a count, so you know the
+playlist is short rather than wondering later. Rows missing a release ID are
+reported as *invalid* the same way. The report stays on screen until you close
+the dialog.
+
+On the way out, artist and label names are **cleaned for display** the way the
+panel expects: Discogs's disambiguation numbers go (`Minos (7)` → `Minos`), as
+does the trailing `*` on an unlinked name variation. A label repeated once per
+format is collapsed to one (`XL Recordings, XL Recordings` → `XL Recordings`),
+but a genuine split release keeps both names (`3rd Party, Kemet` stays as it is).
+
+Panel notes land in their own **Note** column on the playlist grid — separate from
+**Notes**, which is the record's Discogs notes field. Export → import → export
+round-trips without drift, so moving a set back and forth doesn't degrade it.
 
 ### Web UI Settings page
 

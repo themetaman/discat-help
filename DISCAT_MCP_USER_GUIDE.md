@@ -203,7 +203,9 @@ These tools let you explore and interrogate your Discogs collection from within 
 | `country` | Country of release | `"Germany"` |
 | `genre` | Genre tag | `"Electronic"` |
 | `style` | Style/sub-genre tag | `"Deep House"` |
-| `sort_by` | Sort order | `price_desc`, `artist`, `year` |
+| `sort_by` | Sort order | `price_desc`, `artist`, `year`, `added_desc` |
+
+`added_desc` / `added_asc` sort by when a record joined your collection, so *"what have I bought lately?"* is answerable directly — the same sort as the desktop **Date Added** column. Records with no recorded date sort last rather than being dropped.
 
 **Note:** `country`, `genre`, and `style` filtering requires detailed metadata. If you haven't downloaded with those options, these filters will return no results.
 
@@ -243,6 +245,36 @@ Bundled genre reference data from *Ishkur's Guide to Electronic Music* — 156 g
 > *This tool was added 2026-07-22. Full documentation to be written.*
 >
 > **What it does:** Searches individual track titles (and per-track artists on compilations) across the whole collection — ask *"which of my records has Blue Monday on it?"*. Each result names the matching track and the record it's on; the returned `instance_id` chains into `collection_item` for full record details.
+
+---
+
+### Credit search — `credit_search`
+
+*"What do I own with Masters At Work involved?"*
+*"Which of my records did Carl Craig produce or remix?"*
+*"Do I have anything by Bassbin Twins?"*
+
+Searches every **credited** artist across the collection — remixers,
+producers, writers, engineers and featured artists, not just the name on the
+front of the sleeve. This is the only tool that can see them: most credited
+artists never appear as a release artist, so `collection_search` (which reads
+the release artist) misses them entirely. Same data as the **👤 incl. credits**
+tick box on the desktop Collection tab.
+
+By default a name is widened to that artist's whole Discogs alias group, so
+*Bassbin Twins* also returns a record whose only credit reads *Peter Tall*.
+Pass `include_aliases: false` for a strict name match. The query also matches
+the credit role, so `Remix` lists every remix credit.
+
+Each result gives the credit (`name`, `role`, `kind`, `track_position`) plus the
+owning record — `instance_id` chains into `collection_item` for full details.
+`kind` is one of `release-artist`, `release-credit`, `track-artist` or
+`track-credit`, which tells you whether the artist made the record or just
+appears somewhere on it.
+
+Credits come from detailed metadata, so records downloaded without it have
+none. Alias widening additionally needs the offline Discogs catalogue
+installed; without it the tool still works on printed names.
 
 ---
 
@@ -379,6 +411,7 @@ This is where DisCat MCP really earns its keep. If you're heading to a record fa
 *"Which sellers have the most of my wants?"*
 *"Who covers the most of my House wantlist?"*
 *"Which sellers have the best coverage of my Techno wants, VG+ condition minimum?"*
+*"Which sellers have my 4-star-and-up wants?"*
 
 Ranks sellers by how many of your wantlist items they stock, and calculates a cheapest-possible total if you were to buy everything they have from them.
 
@@ -388,11 +421,14 @@ Ranks sellers by how many of your wantlist items they stock, and calculates a ch
 |---|---|
 | `min_media` | Minimum media condition — e.g. `"VG+"` filters out anything below that |
 | `min_sleeve` | Minimum sleeve condition |
+| `min_rating` | Only count wants rated at least this (0–5), using the desire rating set in DisCat's **My Wantlist** tab. `4` answers "who has my grails" instead of "who has the most of anything I want". Unrated items are excluded when above 0 |
 | `top_n` | How many sellers to return (default 20) |
 | `style` | Filter to wants tagged with this style. Comma-separated for OR: `"House,Deep House"` |
 | `genre` | Filter to wants tagged with this genre |
 
 **Before you run this:** Make sure your wantlist has been scanned with **Scan Market** in DisCat. Items that haven't been scanned don't appear in seller coverage results at all.
+
+**Before using `min_rating`:** rate some wants first, in DisCat's **My Wantlist** sub-tab. Ratings are stored on Discogs, so they're shared with the website and survive a wantlist sync — but an unrated wantlist means `min_rating` filters everything out. `wantlist_list` returns each item's `rating` so you can check. `seller_compare` accepts `min_rating` too.
 
 **Tip:** Run `wantlist_styles` first to check which style names are actually in your wantlist before filtering.
 
@@ -583,7 +619,7 @@ For `seller_coverage` and `seller_compare`, the cheapest total price is calculat
 
 ### "Scan Market opened Chrome but nothing happened"
 
-Discogs requires you to be logged in for marketplace scraping. When Chrome opens, log into Discogs manually — DisCat polls for login for up to 2 minutes before starting the scan. If you miss the window, start the scan again.
+Discogs requires you to be logged in for marketplace scraping. When Chrome opens, log into Discogs manually — DisCat polls for login for up to 2 minutes before starting the scan. If you miss the window, start the scan again. This login now persists across app restarts, so it should only prompt the first time (or after clearing the `chrome_profile` folder next to `discat.db`).
 
 ---
 
