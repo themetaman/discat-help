@@ -736,7 +736,10 @@ Columns are **sortable** (Key sorts musically around the Camelot wheel) and
 **resizable**; **Save as set order** commits the current sort as the stored order,
 and **Reset view** restores the defaults. **Export CSV** produces a set sheet
 (Position, Artist, Track #, Track Title, Key, Energy, Album, Year, Label, Catalog #,
-Format, Folder, Rating, Notes, Discogs URL).
+Format, Folder, Rating, Playlist Note, Record Notes, Discogs URL). The two note
+columns are different things: **Playlist Note** is the note on that playlist row,
+**Record Notes** is the record's Discogs `Notes` field, the same for every playlist
+it appears in.
 
 Keys and energy are entered manually today; a future Mixed In Key import will be able
 to populate them automatically.
@@ -770,8 +773,14 @@ format is collapsed to one (`XL Recordings, XL Recordings` → `XL Recordings`),
 but a genuine split release keeps both names (`3rd Party, Kemet` stays as it is).
 
 Panel notes land in their own **Note** column on the playlist grid — separate from
-**Notes**, which is the record's Discogs notes field. Export → import → export
-round-trips without drift, so moving a set back and forth doesn't degrade it.
+**Notes**, which is the record's Discogs notes field and is shared by every
+playlist the record is in. Switch the playlist to **edit mode** and the Note cell
+becomes a text box, so cue notes (*“intro only, mix out at 2:30”*) can be written
+in DisCat and not just imported; it saves when you press Enter or click away. The
+note belongs to that row alone — the same 12" in another playlist, or picked
+twice in this one for A1 and B2, keeps its own. Nothing is sent to Discogs.
+Export → import → export round-trips without drift, so moving a set back and
+forth doesn't degrade it.
 
 ### Web UI Settings page
 
